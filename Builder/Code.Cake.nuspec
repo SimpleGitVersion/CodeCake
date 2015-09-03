@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <metadata xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+    <id>Code.Cake</id>
+    <version>$version$</version>
+    <authors>Olivier Spinelli</authors>
+    <owners>Invenietis</owners>
+    <description>Code Cake library.</description>
+    <summary>CodeCake offers code based support to Cake (http://cakebuild.net/).</summary>
+    <licenseUrl>https://github.com/SimpleGitVersion/CodeCake/blob/master/LICENSE.txt</licenseUrl>
+    <projectUrl>https://github.com/SimpleGitVersion/CodeCake</projectUrl>
+    <iconUrl>https://raw.githubusercontent.com/SimpleGitVersion/CodeCake/blob/master/CodeCake.png</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <copyright>Copyright (c) Invenietis</copyright>
+    <tags>CodeCake Cake Script Build</tags>
+    <dependencies>
+      <dependency id="Cake.Core" version="$version$" />
+      <dependency id="Cake.Common" version="$version$" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="../Code.Cake/bin/Release/Code.Cake.dll" target="lib/net45" />
+    <file src="../Code.Cake/bin/Release/Code.Cake.xml" target="lib/net45" />
+    <file src="../Code.Cake/bin/Release/Code.Cake.pdb" target="lib/net45" />
+  </files>
+</package>

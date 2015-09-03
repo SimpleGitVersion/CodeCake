@@ -1,0 +1,150 @@
+﻿using Cake.Arguments;
+using Cake.Core;
+using Cake.Core.Diagnostics;
+using Cake.Core.IO;
+using Cake.Core.IO.NuGet;
+using Cake.Diagnostics;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Reflection;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Code.Cake
+{
+    /// <summary>
+    /// Crappy implementation: it is just a POC.
+    /// </summary>
+    public class CodeCakeApplication
+    {
+        readonly IDictionary<string, CodeCakeBuildTypeDescriptor> _builds;
+        private readonly string _solutionDirectory;
+
+        /// <summary>
+        /// Initializes a new CodeCakeApplication (DNX context).
+        /// </summary>
+        /// <param name="solutionDirectory">Solution directory: will become the <see cref="ICakeEnvironment.WorkingDirectory"/>.</param>
+        /// <param name="codeContainers">Assemblies that may contain concrete <see cref="CodeCakeHost"/> objects.</param>
+        public CodeCakeApplication( string solutionDirectory, params Assembly[] codeContainers )
+            : this( (IEnumerable<Assembly>)codeContainers, solutionDirectory )
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new CodeCakeApplication.
+        /// </summary>
+        /// <param name="codeContainers">
+        /// Assemblies that may contain concrete <see cref="CodeCakeHost"/> objects.
+        /// The <see cref="Assembly.GetEntryAssembly()"/> is always considered, this is why it can be let to null or be empty.
+        /// </param>
+        /// <param name="solutionDirectory">
+        /// Solution directory: will become the <see cref="ICakeEnvironment.WorkingDirectory"/>.
+        /// When null, if the <see cref="Assembly.GetEntryAssembly()"/> is not null we consider it running in "Solution/Builder/bin/[Configuration}" folder:
+        /// we compute the solution directory by removing 3 sub folders.
+        /// </param>
+        public CodeCakeApplication( IEnumerable<Assembly> codeContainers = null, string solutionDirectory = null )
+        {
+            var executingAssembly = Assembly.GetEntryAssembly();
+            if( codeContainers == null ) codeContainers = Enumerable.Empty<Assembly>();
+            _builds = codeContainers.Concat( new[] { executingAssembly } )
+                            .Where( a => a != null )
+                            .Distinct()
+                            .SelectMany( a => a.GetTypes() )
+                            .Where( t => !t.IsAbstract && typeof( CodeCakeHost ).IsAssignableFrom( t ) )
+                            .ToDictionary( t => t.Name, t => new CodeCakeBuildTypeDescriptor( t ) );
+            if( solutionDirectory == null && executingAssembly != null )
+            {
+                solutionDirectory = new Uri( Assembly.GetEntryAssembly().CodeBase ).LocalPath;
+                solutionDirectory = System.IO.Path.GetDirectoryName( solutionDirectory );
+                solutionDirectory = System.IO.Path.GetDirectoryName( solutionDirectory );
+                solutionDirectory = System.IO.Path.GetDirectoryName( solutionDirectory );
+                solutionDirectory = System.IO.Path.GetDirectoryName( solutionDirectory );
+            }
+            _solutionDirectory = solutionDirectory;
+        }
+
+        /// <summary>
+        /// Runs the application.
+        /// </summary>
+        /// <param name="args">Arguments.</param>
+        /// <returns>0 on success.</returns>
+        public int Run( string[] args )
+        {
+            var console = new CakeConsole();
+            var logger = new CakeBuildLog( console );
+            var engine = new CakeEngine( logger );
+
+            IFileSystem fileSystem = new FileSystem();
+            MutableCakeEnvironment environment = new MutableCakeEnvironment();
+            IGlobber globber = new Globber( fileSystem, environment );
+            ICakeArguments arguments = new CakeArguments();
+            IProcessRunner processRunner = new ProcessRunner( environment, logger );
+            IToolResolver nuGetToolResolver = new NuGetToolResolver( fileSystem, environment, globber );
+            IRegistry windowsRegistry = new WindowsRegistry();
+
+            // Parse options.
+            var argumentParser = new ArgumentParser( logger, fileSystem );
+            var options = argumentParser.Parse( args );
+            Debug.Assert( options != null );
+            logger.SetVerbosity( options.Verbosity );
+            CodeCakeBuildTypeDescriptor choosenBuild;
+            if( !AvailableBuilds.TryGetValue( options.Script, out choosenBuild ) )
+            {
+                logger.Error( "Build script '{0}' not found.", options.Script );
+                return -1;
+            }
+
+            var context = new CakeContext( fileSystem, environment, globber, logger, arguments, processRunner, new[] { nuGetToolResolver }, windowsRegistry );
+
+            // Copy the arguments from the options.
+            context.Arguments.SetArguments( options.Arguments );
+
+            // Set the working directory: the solution directory.
+            environment.WorkingDirectory = new DirectoryPath( _solutionDirectory );
+
+            // Adds additional paths from choosen build.
+            HashSet<string> additionals = new HashSet<string>();
+            foreach( var pattern in choosenBuild.AdditionnalPatternPaths )
+            {
+                string expansed = Environment.ExpandEnvironmentVariables( pattern );
+                additionals.UnionWith( globber.GetDirectories( expansed ).Select( p => p.FullPath ) );
+            }
+            if( additionals.Count > 0 )
+            {
+                logger.Information( "Path(s) added: " + String.Join( ", ", additionals ) );
+                environment.EnvironmentPaths.UnionWith( additionals );
+            }
+
+            CodeCakeHost._injectedActualHost = new BuildScriptHost( engine, context );
+            CodeCakeHost c = (CodeCakeHost)Activator.CreateInstance( choosenBuild.Type );
+
+            try
+            {
+                var strategy = new DefaultExecutionStrategy( logger );
+                var report = engine.RunTarget( context, strategy, "Default" );
+                if( report != null && !report.IsEmpty )
+                {
+                    var printerReport = new CakeReportPrinter( console );
+                    printerReport.Write( report );
+                }
+            }
+            catch( Exception ex )
+            {
+                logger.Error( "Error occured: '{0}'.", ex.Message );
+                return -1;
+            }
+            return 0;
+        }
+
+        /// <summary>
+        /// Gets a mutable dictionary of build objects.
+        /// </summary>
+        public IDictionary<string, CodeCakeBuildTypeDescriptor> AvailableBuilds
+        {
+            get { return _builds; }
+        }
+
+    }
+}
