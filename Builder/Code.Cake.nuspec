@@ -5,7 +5,7 @@
     <version>$version$</version>
     <authors>Olivier Spinelli</authors>
     <owners>Invenietis</owners>
-    <description>Code Cake library.</description>
+    <description>Code.Cake library contains Code.Cake.dll that CodeCakeBuilder applications uses.</description>
     <summary>CodeCake offers code based support to Cake (http://cakebuild.net/).</summary>
     <licenseUrl>https://github.com/SimpleGitVersion/CodeCake/blob/master/LICENSE.txt</licenseUrl>
     <projectUrl>https://github.com/SimpleGitVersion/CodeCake</projectUrl>
@@ -14,13 +14,13 @@
     <copyright>Copyright (c) Invenietis</copyright>
     <tags>CodeCake Cake Script Build</tags>
     <dependencies>
-      <dependency id="Cake.Core" version="$version$" />
-      <dependency id="Cake.Common" version="$version$" />
+      <dependency id="Cake.Core" version="0.5.3" />
+      <dependency id="Cake.Common" version="0.5.3" />
     </dependencies>
   </metadata>
   <files>
-    <file src="../Code.Cake/bin/Release/Code.Cake.dll" target="lib/net45" />
-    <file src="../Code.Cake/bin/Release/Code.Cake.xml" target="lib/net45" />
-    <file src="../Code.Cake/bin/Release/Code.Cake.pdb" target="lib/net45" />
+    <file src="..\Code.Cake\bin\Release\Code.Cake.dll" target="lib/net45" />
+    <file src="..\Code.Cake\bin\Release\Code.Cake.xml" target="lib/net45" />
+    <file src="..\Code.Cake\bin\Release\Code.Cake.pdb" target="lib/net45" />
   </files>
 </package>

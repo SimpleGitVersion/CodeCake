@@ -10,9 +10,6 @@ if (!(Test-Path $builderDir -PathType Container)) {
 
 $sln = Join-Path $solutionDir "Code.Cake.sln"
 $nuspecFile = Join-Path $builderDir "Code.Cake.nuspec"
-$packageFile = Join-Path $solutionDir "Code.Cake\packages.config"
-[xml]$xmlPackage = Get-Content $packageFile 
-$cakeVersion = $xmlPackage.packages.package.version | Select-Object -first 1
 
 # Find MSBuild 4.0.
 $dotNetVersion = "4.0"
@@ -47,6 +44,6 @@ Push-Location $solutionDir
 &$msbuildExe /p:Configuration=Release
 Pop-Location
 
-&$nugetExe pack $nuspecFile -Version $cakeVersion
+&$nugetExe pack $nuspecFile -Version 0.1.0-beta
 
 
