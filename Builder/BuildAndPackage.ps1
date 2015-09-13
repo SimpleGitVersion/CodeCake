@@ -41,9 +41,9 @@ if (!(Test-Path $nugetExe)) {
 
 Push-Location $solutionDir
 &$nugetExe restore
-&$msbuildExe /p:Configuration=Release
+&$msbuildExe /p:Configuration=Release 
 Pop-Location
 
-&$nugetExe pack $nuspecFile -Version 0.1.0-beta
+&$nugetExe pack $nuspecFile -Version 0.1.0-r
 
 

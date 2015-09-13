@@ -69,9 +69,12 @@
     <Compile Include="CodeCakeSpecific\CodeCakeBuildTypeDescriptor.cs" />
     <Compile Include="CodeCakeSpecific\CodeCakeHost.cs" />
     <Compile Include="CodeCakeSpecific\InteractiveAliases.cs" />
+    <Compile Include="CodeCakeSpecific\SecureFiles\RijndaelCrypt.cs" />
+    <Compile Include="CodeCakeSpecific\SecureFiles\SecureFilesAliases.cs" />
     <Compile Include="CodeCakeSpecific\Solution\ITemporarySolutionFile.cs" />
     <Compile Include="CodeCakeSpecific\Solution\SolutionExtensions.cs" />
     <Compile Include="CodeCakeSpecific\Solution\TemporarySolutionFile.cs" />
+    <Compile Include="CodeCakeSpecific\TemporaryFile.cs" />
     <Compile Include="Diagnostics\CakeBuildLog.cs" />
     <Compile Include="Diagnostics\ConsolePalette.cs" />
     <Compile Include="Diagnostics\Formatting\FormatParser.cs" />
