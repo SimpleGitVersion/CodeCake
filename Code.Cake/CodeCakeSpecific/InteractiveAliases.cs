@@ -7,7 +7,7 @@ using System.Linq;
 namespace CodeCake
 {
     /// <summary>
-    /// Contains functionality related to the interactive mode.
+    /// Contains functionalities related to the interactive mode.
     /// </summary>
     [CakeAliasCategory( "Environment" )]
     public static class InteractiveAliases
