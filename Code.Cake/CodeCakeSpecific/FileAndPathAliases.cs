@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Code.Cake.CodeCakeSpecific
+namespace CodeCake
 {
     /// <summary>
     /// Contains functionalities related to the interactive mode.

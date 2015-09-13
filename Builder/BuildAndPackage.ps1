@@ -44,6 +44,6 @@ Push-Location $solutionDir
 &$msbuildExe /p:Configuration=Release 
 Pop-Location
 
-&$nugetExe pack $nuspecFile -Version 0.1.0-r01
+&$nugetExe pack $nuspecFile -Version 0.1.0-r02
 
 
