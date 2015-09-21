@@ -1,0 +1,267 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- 
+This file comes from: https://gist.github.com/sharwell/6131243. 
+Added developmentDependency supports (v2.8).
+Feel free to add it to Visual Studio schema folder but as long as it is included in 
+one project of a Solution, it applies and provides useful guidance when editing nuspec.
+-->
+<xs:schema id="nuspec"
+           targetNamespace="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd"
+           elementFormDefault="qualified"
+           xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd"
+           xmlns:mstns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:complexType name="dependency">
+    <xs:attribute name="id" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>The package id of the package that this package is dependent upon. The package specified by the dependency id is required by this package and NuGet will install it when installing the current package.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="version" type="xs:string" use="optional">
+      <xs:annotation>
+        <xs:documentation>The range of versions acceptable as a dependency. Typically this is just a version number which represents a minimum version. However a more explicit version range syntax is supported.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
+  <xs:complexType name="dependencyGroup">
+    <xs:sequence>
+      <xs:element name="dependency" minOccurs="0" maxOccurs="unbounded" type="dependency">
+        <xs:annotation>
+          <xs:documentation>A reference to another package that this package depends on.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+    <xs:attribute name="targetFramework" type="xs:string" use="optional">
+      <xs:annotation>
+        <xs:documentation>Optional. The target framework of the group. If not set, the group acts as a fallback group, which behaves exactly as before version 2.0.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
+  <xs:complexType name="reference">
+    <xs:attribute name="file" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>The path to an assembly which the project should explicitly reference.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
+  <xs:complexType name="referenceGroup">
+    <xs:sequence>
+      <xs:element name="reference" minOccurs="1" maxOccurs="unbounded" type="reference">
+        <xs:annotation>
+          <xs:documentation>A explicitly specified assembly that the target project should reference.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+    <xs:attribute name="targetFramework" type="xs:string" use="optional">
+      <xs:annotation>
+        <xs:documentation>Optional. The target framework of the group. If not set, the group acts as a fallback group, which behaves exactly as before version 2.5.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
+  <xs:element name="package">
+    <xs:annotation>
+      <xs:documentation>The top-level element for a NuGet package specification.</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="metadata" maxOccurs="1" minOccurs="1">
+          <xs:annotation>
+            <xs:documentation>Describes the package and its dependencies.</xs:documentation>
+          </xs:annotation>
+          <xs:complexType>
+            <xs:all>
+              <xs:element name="id" maxOccurs="1" minOccurs="1" type="xs:string">
+                <xs:annotation>
+                  <xs:documentation>The unique identifier for the package. This is the package name that is shown when packages are listed using the Package Manager Console. These are also used when installing a package using the Install-Package command within the Package Manager Console. Package IDs may not contain any spaces or characters that are invalid in an URL. In general, they follow the same rules as .NET namespaces do. So `Foo.Bar` is a valid ID, `Foo!` and `Foo Bar` are not.</xs:documentation>
+                </xs:annotation>
+              </xs:element>
+              <xs:element name="version" maxOccurs="1" minOccurs="1" type="xs:string">
+                <xs:annotation>
+                  <xs:documentation>The version of the package, in a format like `1.2.3`.</xs:documentation>
+                </xs:annotation>
+              </xs:element>
+              <xs:element name="title" maxOccurs="1" minOccurs="0" type="xs:string">
+                <xs:annotation>
+                  <xs:documentation>The human-friendly title of the package displayed in the Manage NuGet Packages dialog. If none is specified, the ID is used instead.</xs:documentation>
+                </xs:annotation>
+              </xs:element>
+              <xs:element name="authors" maxOccurs="1" minOccurs="1" type="xs:string">
+                <xs:annotation>
+                  <xs:documentation>A comma-separated list of authors of the package code.</xs:documentation>
+                </xs:annotation>
+              </xs:element>
+              <xs:element name="owners" maxOccurs="1" minOccurs="0" type="xs:string">
+                <xs:annotation>
+                  <xs:documentation>A comma-separated list of the package creators. This is often the same list as in authors. This is ignored when uploading the package to the NuGet.org Gallery.</xs:documentation>
+                </xs:annotation>
+              </xs:element>
+              <xs:element name="licenseUrl" maxOccurs="1" minOccurs="0" type="xs:anyURI">
+                <xs:annotation>
+                  <xs:documentation>A link to the license that the package is under.</xs:documentation>
+                </xs:annotation>
+              </xs:element>
+              <xs:element name="projectUrl" maxOccurs="1" minOccurs="0" type="xs:anyURI">
+                <xs:annotation>
+                  <xs:documentation>A URL for the home page of the package.</xs:documentation>
+                </xs:annotation>
+              </xs:element>
+              <xs:element name="iconUrl" maxOccurs="1" minOccurs="0" type="xs:anyURI">
+                <xs:annotation>
+                  <xs:documentation>A URL for the image to use as the icon for the package in the **Manage NuGet Packages** dialog box. This should be a 32x32-pixel *.png* file that has a transparent background.</xs:documentation>
+                </xs:annotation>
+              </xs:element>
+              <xs:element name="requireLicenseAcceptance" maxOccurs="1" minOccurs="0" type="xs:boolean">
+                <xs:annotation>
+                  <xs:documentation>A Boolean value that specifies whether the client needs to ensure that the package license (described by licenseUrl) is accepted before the package is installed.</xs:documentation>
+                </xs:annotation>
+              </xs:element>
+              <xs:element name="description" maxOccurs="1" minOccurs="1" type="xs:string">
+                <xs:annotation>
+                  <xs:documentation>A long description of the package. This shows up in the right pane of the Add Package Dialog as well as in the Package Manager Console when listing packages using the `Get-Package` command.</xs:documentation>
+                </xs:annotation>
+              </xs:element>
+              <xs:element name="summary" maxOccurs="1" minOccurs="0" type="xs:string">
+                <xs:annotation>
+                  <xs:documentation>A short description of the package. If specified, this shows up in the middle pane of the Add Package Dialog. If not specified, a truncated version of the description is used instead.</xs:documentation>
+                </xs:annotation>
+              </xs:element>
+              <xs:element name="releaseNotes" maxOccurs="1" minOccurs="0" type="xs:string">
+                <xs:annotation>
+                  <xs:documentation>(v1.5) A description of the changes made in each release of the package. This field only shows up when the _Updates_ tab is selected and the package is an update to a previously installed package. It is displayed where the Description would normally be displayed.</xs:documentation>
+                </xs:annotation>
+              </xs:element>
+              <xs:element name="copyright" maxOccurs="1" minOccurs="0" type="xs:string">
+                <xs:annotation>
+                  <xs:documentation>(v1.5) Copyright details for the package.</xs:documentation>
+                </xs:annotation>
+              </xs:element>
+              <xs:element name="language" maxOccurs="1" minOccurs="0" type="xs:string" default="en-US">
+                <xs:annotation>
+                  <xs:documentation>The locale ID for the package, such as en-us.</xs:documentation>
+                </xs:annotation>
+              </xs:element>
+              <xs:element name="tags" maxOccurs="1" minOccurs="0" type="xs:string">
+                <xs:annotation>
+                  <xs:documentation>A space-delimited list of tags and keywords that describe the package. This information is used to help make sure users can find the package using searches in the **Add Package Reference** dialog box or filtering in the **Package Manager Console** window.</xs:documentation>
+                </xs:annotation>
+              </xs:element>
+              <xs:element name="developmentDependency" maxOccurs="1" minOccurs="0" type="xs:string">
+                <xs:annotation>
+                  <xs:documentation>v2.8 A Boolean value that specifies whether the package will be marked as a development-only dependency in the packages.config. This will cause the package to be excluded from the dependency list when the referencing project itself is later packaged.</xs:documentation>
+                </xs:annotation>
+              </xs:element>
+              <xs:element name="dependencies" maxOccurs="1" minOccurs="0">
+                <xs:annotation>
+                  <xs:documentation>The list of dependencies for the package.</xs:documentation>
+                </xs:annotation>
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:choice minOccurs="0" maxOccurs="unbounded">
+                      <xs:element name="dependency" type="dependency">
+                        <xs:annotation>
+                          <xs:documentation>A reference to another package that this package depends on.</xs:documentation>
+                        </xs:annotation>
+                      </xs:element>
+                      <xs:element name="group" type="dependencyGroup">
+                        <xs:annotation>
+                          <xs:documentation>A group of dependencies associated with a particular target framework.</xs:documentation>
+                        </xs:annotation>
+                      </xs:element>
+                    </xs:choice>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+              <xs:element name="frameworkAssemblies" maxOccurs="1" minOccurs="0">
+                <xs:annotation>
+                  <xs:documentation>(v1.2) The list of .NET Framework assembly references that this package requires. These are references to assemblies that exist in the .NET Framework and thus should already be in the GAC for any machine. Specifying framework assembly references ensures these references are added when installing the package.</xs:documentation>
+                </xs:annotation>
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="frameworkAssembly" minOccurs="0" maxOccurs="unbounded">
+                      <xs:annotation>
+                        <xs:documentation>Specifies a framework dependency. Framework assemblies are assumed to be installed in the user's GAC by default.</xs:documentation>
+                      </xs:annotation>
+                      <xs:complexType>
+                        <xs:attribute name="assemblyName" type="xs:string" use="required">
+                          <xs:annotation>
+                            <xs:documentation>Required. The fully qualified assembly name.</xs:documentation>
+                          </xs:annotation>
+                        </xs:attribute>
+                        <xs:attribute name="targetFramework" type="xs:string" use="optional">
+                          <xs:annotation>
+                            <xs:documentation>Optional. If specified, the specific target framework that this reference applies to. For example, if reference only applies to .NET 4, then the value should be "net40". If the reference applies to *all* frameworks, then omit this attribute.</xs:documentation>
+                          </xs:annotation>
+                        </xs:attribute>
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+              <xs:element name="references" maxOccurs="1" minOccurs="0">
+                <xs:annotation>
+                  <xs:documentation>(v1.5) Names of assemblies under lib that are added as project references. If unspecified, all references in lib are added as project references. When specifying a reference, only specify the name and not the path inside the package.</xs:documentation>
+                </xs:annotation>
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:choice minOccurs="0" maxOccurs="unbounded">
+                      <xs:element name="reference" type="reference">
+                        <xs:annotation>
+                          <xs:documentation>A explicitly specified assembly that the target project should reference.</xs:documentation>
+                        </xs:annotation>
+                      </xs:element>
+                      <xs:element name="group" type="referenceGroup">
+                        <xs:annotation>
+                          <xs:documentation>A group of references associated with a particular target framework.</xs:documentation>
+                        </xs:annotation>
+                      </xs:element>
+                    </xs:choice>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+            </xs:all>
+            <xs:attribute name="minClientVersion" use="optional" type="xs:string">
+              <xs:annotation>
+                <xs:documentation>(v2.5 or above) Specifies the minimum version of the NuGet client that can install this package. This requirement is enforced by both the NuGet Visual Studio extension and nuget.exe program.</xs:documentation>
+              </xs:annotation>
+            </xs:attribute>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="files" minOccurs="0" maxOccurs="1" nillable="true">
+          <xs:annotation>
+            <xs:documentation>Explicitly specifies the set of files to include in the package.</xs:documentation>
+          </xs:annotation>
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="file" minOccurs="0" maxOccurs="unbounded">
+                <xs:annotation>
+                  <xs:documentation>Specifies the source and destination of a file to include in the package.</xs:documentation>
+                </xs:annotation>
+                <xs:complexType>
+                  <xs:attribute name="src" use="required" type="xs:string">
+                    <xs:annotation>
+                      <xs:documentation>The location of the file or files to include. The path is relative to the NuSpec file unless an absolute path is specified. The wildcard character, `*`, is allowed. Using a double wildcard, `**`, implies a recursive directory search.</xs:documentation>
+                    </xs:annotation>
+                  </xs:attribute>
+                  <xs:attribute name="target" use="optional" type="xs:string">
+                    <xs:annotation>
+                      <xs:documentation>This is a relative path to the directory within the package where the source files will be placed.</xs:documentation>
+                    </xs:annotation>
+                  </xs:attribute>
+                  <xs:attribute name="exclude" use="optional" type="xs:string">
+                    <xs:annotation>
+                      <xs:documentation>The file or files to exclude. This is usually combined with a wildcard value in the `src` attribute. The `exclude` attribute can contain a semi-colon delimited list of files or a file pattern. Using a double wildcard, `**`, implies a recursive exclude pattern.</xs:documentation>
+                    </xs:annotation>
+                  </xs:attribute>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

@@ -81,7 +81,6 @@ namespace Code.Cake
             IGlobber globber = new Globber( fileSystem, environment );
             ICakeArguments arguments = new CakeArguments();
             IProcessRunner processRunner = new ProcessRunner( environment, logger );
-            IToolResolver nuGetToolResolver = new NuGetToolResolver( fileSystem, environment, globber );
             IRegistry windowsRegistry = new WindowsRegistry();
 
             // Parse options.
@@ -96,7 +95,7 @@ namespace Code.Cake
                 return -1;
             }
 
-            var context = new CakeContext( fileSystem, environment, globber, logger, arguments, processRunner, new[] { nuGetToolResolver }, windowsRegistry );
+            var context = new CakeContext( fileSystem, environment, globber, logger, arguments, processRunner, windowsRegistry );
 
             // Copy the arguments from the options.
             context.Arguments.SetArguments( options.Arguments );

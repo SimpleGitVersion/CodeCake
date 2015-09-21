@@ -1,0 +1,14 @@
+# Basic appveyor configuration: CodeCakeBuilder application does all the job.
+version: build{build}
+branches:
+  only:
+  - master
+  - develop
+environment:
+  NUGET_API_KEY:
+    secure: Cx0q/gQZQpP3eDf6H9lzIDpYYki+sGCpruxgDcFUJRoYdpH7l5aDh7afloH3uNLD
+install:
+- ps: CodeCakeBuilder\Bootstrap.ps1
+build_script:
+- CodeCakeBuilder\bin\Release\CodeCakeBuilder.exe -nointeraction
+test: off

@@ -1,15 +1,26 @@
-# You may move this bootstrap.ps1 to the solution directory or let it in Builder folder:
+# This script builds CodeCakeBuilder with the help of nuget.exe (in Tools/, downloaded if missing)
+# and MSBuild.
+#
+# You may move this bootstrap.ps1 to the solution directory or let it in CodeCakeBuilder folder:
 # The $solutionDir and $builderDir are automatically adapted.
 #
 $solutionDir = $PSScriptRoot
-$builderDir = Join-Path $solutionDir "Builder"
+$builderDir = Join-Path $solutionDir "CodeCakeBuilder"
 if (!(Test-Path $builderDir -PathType Container)) {
     $builderDir = $PSScriptRoot
     $solutionDir = Join-Path $builderDir ".."
 }
 
-$sln = Join-Path $solutionDir "Code.Cake.sln"
-$nuspecFile = Join-Path $builderDir "Code.Cake.nuspec"
+# Ensures that CodeCakeBuilder project exists.
+$builderProj = Join-Path $builderDir "CodeCakeBuilder.csproj"
+if (!(Test-Path $builderProj)) {
+    Throw "Could not find CodeCakeBuilder.csproj"
+}
+# Ensures that packages.config file exists.
+$builderPackageConfig = Join-Path $builderDir "packages.config"
+if (!(Test-Path $builderPackageConfig)) {
+    Throw "Could not find packages.config"
+}
 
 # Find MSBuild 4.0.
 $dotNetVersion = "4.0"
@@ -19,6 +30,7 @@ $msbuildExe = join-path -path (Get-ItemProperty $regKey).$regProperty -childpath
 if (!(Test-Path $msbuildExe)) {
     Throw "Could not find msbuild.exe"
 }
+
 
 # Tools directory is for nuget.exe but it may be used to 
 # contain other utilities.
@@ -37,13 +49,6 @@ if (!(Test-Path $nugetExe)) {
     }
 }
 
-
-
-Push-Location $solutionDir
-&$nugetExe restore
-&$msbuildExe /p:Configuration=Release 
-Pop-Location
-
-&$nugetExe pack $nuspecFile -Version 0.1.0-r02
-
+&$nugetExe restore $builderPackageConfig -SolutionDirectory $solutionDir
+&$msbuildExe $builderProj /p:Configuration=Release
 

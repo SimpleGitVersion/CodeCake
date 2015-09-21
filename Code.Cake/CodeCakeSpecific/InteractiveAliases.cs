@@ -57,8 +57,8 @@ namespace CodeCake
             for(;;)
             {
                 char c = char.ToUpperInvariant( Console.ReadKey().KeyChar );
-                if( oU.Contains( c ) ) return c;
                 Console.WriteLine();
+                if( oU.Contains( c ) ) return c;
                 Console.Write( "Invalid choice '{0}'. Must be one of {1}: ", c, choices );
             }
         }
