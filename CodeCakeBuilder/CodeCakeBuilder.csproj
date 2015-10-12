@@ -43,10 +43,6 @@
       <HintPath>..\packages\Cake.Core.0.5.5\lib\net45\Cake.Core.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Code.Cake, Version=0.2.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Code.Cake.0.2.1\lib\net45\Code.Cake.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="SimpleGitVersion.Cake, Version=0.7.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\SimpleGitVersion.Cake.0.7.2\lib\net45\SimpleGitVersion.Cake.dll</HintPath>
       <Private>True</Private>
@@ -79,6 +75,12 @@
       <SubType>Designer</SubType>
     </None>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Code.Cake\Code.Cake.csproj">
+      <Project>{246bdff0-af13-4353-835c-2c39787339bb}</Project>
+      <Name>Code.Cake</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
