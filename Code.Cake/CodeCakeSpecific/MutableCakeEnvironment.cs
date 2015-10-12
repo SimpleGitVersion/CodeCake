@@ -4,6 +4,7 @@ using System.Reflection;
 using Cake.Core.IO;
 using System.Collections.Generic;
 using Cake.Core;
+using System.Linq;
 
 namespace Code.Cake
 {
@@ -136,6 +137,20 @@ namespace Code.Cake
                 throw new CakeException( "Working directory can not be set to a relative path." );
             }
             Environment.CurrentDirectory = path.FullPath;
+        }
+
+        /// <summary>
+        /// Gets all environment variables.
+        /// </summary>
+        /// <returns>The environment variables as IDictionary&lt;string, string&gt; </returns>
+        public IDictionary<string, string> GetEnvironmentVariables()
+        {
+            return Environment.GetEnvironmentVariables()
+                .Cast<System.Collections.DictionaryEntry>()
+                .ToDictionary(
+                key => (string)key.Key,
+                value => value.Value as string,
+                StringComparer.OrdinalIgnoreCase );
         }
     }
 }

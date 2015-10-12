@@ -35,16 +35,16 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Cake.Common, Version=0.5.4.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Cake.Common.0.5.4\lib\net45\Cake.Common.dll</HintPath>
+    <Reference Include="Cake.Common, Version=0.5.5.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Cake.Common.0.5.5\lib\net45\Cake.Common.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Cake.Core, Version=0.5.4.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Cake.Core.0.5.4\lib\net45\Cake.Core.dll</HintPath>
+    <Reference Include="Cake.Core, Version=0.5.5.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Cake.Core.0.5.5\lib\net45\Cake.Core.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Code.Cake, Version=0.2.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Code.Cake.0.2.0\lib\net45\Code.Cake.dll</HintPath>
+      <HintPath>..\packages\Code.Cake.0.2.1\lib\net45\Code.Cake.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="SimpleGitVersion.Cake, Version=0.7.0.0, Culture=neutral, processorArchitecture=MSIL">
