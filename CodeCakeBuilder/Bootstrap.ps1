@@ -10,7 +10,6 @@ if (!(Test-Path $builderDir -PathType Container)) {
     $builderDir = $PSScriptRoot
     $solutionDir = Join-Path $builderDir ".."
 }
-
 # Ensures that CodeCakeBuilder project exists.
 $builderProj = Join-Path $builderDir "CodeCakeBuilder.csproj"
 if (!(Test-Path $builderProj)) {
@@ -48,6 +47,12 @@ if (!(Test-Path $nugetExe)) {
         Throw "Could not find NuGet.exe"
     }
 }
+# This is specific to this Code.Cake build: 
+# Its CodeCakeBuilder uses the CodeCake project itself, not the NuGet package (previous published version).
+# Compiling CodeCakeBuilder.csproj needs to actually compile this Code.Cake project, but to be able to compile it
+# we must restore the NuGet packages from Code.Cake/packages.config...
+$codeCakePackageConfig = Join-Path $solutionDir "Code.Cake/packages.config"
+&$nugetExe restore $codeCakePackageConfig -SolutionDirectory $solutionDir
 
 &$nugetExe restore $builderPackageConfig -SolutionDirectory $solutionDir
 &$msbuildExe $builderProj /p:Configuration=Release
