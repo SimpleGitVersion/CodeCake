@@ -14,6 +14,9 @@ using System;
 using Cake.Common.Tools.NuGet.Push;
 using SimpleGitVersion;
 using Cake.Common.Text;
+using System.Diagnostics;
+using System.Collections.Generic;
+using Cake.Core.IO;
 
 namespace CodeCake
 {
@@ -119,29 +122,43 @@ namespace CodeCake
                             }
                         }
                     }
-                    // Resolves nuget.com API key.
-                    var apiKey = Cake.InteractiveEnvironmentVariable( "NUGET_API_KEY" );
-                    if( string.IsNullOrEmpty( apiKey ) )
+                    IEnumerable<FilePath> nugetPackages = Cake.GetFiles( releasesDir.Path + "/*.nupkg" );
+                    if( gitInfo.IsValidRelease )
                     {
-                        Cake.Information( "Could not resolve NuGet API key. Push to NuGet is skipped." );
+                        PushNuGetPackages( "NUGET_API_KEY", "https://www.nuget.org/api/v2/package", nugetPackages );
                     }
                     else
                     {
-                        var settings = new NuGetPushSettings
-                        {
-                            Source = "https://www.nuget.org/api/v2/package",
-                            ApiKey = apiKey
-                        };
-
-                        foreach( var nupkg in Cake.GetFiles( releasesDir.Path + "/*.nupkg" ) )
-                        {
-                            Cake.NuGetPush( nupkg, settings );
-                        }
+                        Debug.Assert( gitInfo.IsValidCIBuild );
+                        PushNuGetPackages( "MYGET_EXPLORE_API_KEY", "https://www.myget.org/F/invenietis-explore/api/v2/package", nugetPackages );
                     }
                 } );
 
             Task( "Default" ).IsDependentOn( "Push-NuGet-Packages" );
 
+        }
+
+        private void PushNuGetPackages( string apiKeyName, string pushUrl, IEnumerable<FilePath> nugetPackages )
+        {
+            // Resolves the API key.
+            var apiKey = Cake.InteractiveEnvironmentVariable( apiKeyName );
+            if( string.IsNullOrEmpty( apiKey ) )
+            {
+                Cake.Information( "Could not resolve {0}. Push to {1} is skipped.", apiKeyName, pushUrl );
+            }
+            else
+            {
+                var settings = new NuGetPushSettings
+                {
+                    Source = pushUrl,
+                    ApiKey = apiKey
+                };
+
+                foreach( var nupkg in nugetPackages )
+                {
+                    Cake.NuGetPush( nupkg, settings );
+                }
+            }
         }
     }
 }
