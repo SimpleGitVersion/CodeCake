@@ -103,8 +103,8 @@ namespace Code.Cake
             // Set the working directory: the solution directory.
             environment.WorkingDirectory = new DirectoryPath( _solutionDirectory );
 
-            // Adds additional paths from choosen build.
-            HashSet<string> additionals = new HashSet<string>();
+            // Adds additional paths from chosen build.
+            HashSet<string> additionals = new HashSet<string>( environment.EnvironmentPaths );
             foreach( var pattern in choosenBuild.AdditionnalPatternPaths )
             {
                 string expansed = Environment.ExpandEnvironmentVariables( pattern );
@@ -113,7 +113,10 @@ namespace Code.Cake
             if( additionals.Count > 0 )
             {
                 logger.Information( "Path(s) added: " + String.Join( ", ", additionals ) );
-                environment.EnvironmentPaths.UnionWith( additionals );
+                foreach( var p in additionals )
+                {
+                    environment.EnvironmentPaths.Add( p );
+                }
             }
 
             CodeCakeHost._injectedActualHost = new BuildScriptHost( engine, context );

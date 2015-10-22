@@ -15,7 +15,7 @@ namespace Code.Cake
     /// </summary>
     public class MutableCakeEnvironment : ICakeEnvironment
     {
-        readonly HashSet<string> _path;
+        readonly List<string> _path;
 
         /// <summary>
         /// Gets or sets the working directory.
@@ -36,11 +36,13 @@ namespace Code.Cake
             var pathEnv = Environment.GetEnvironmentVariable( "PATH" );
             if( !string.IsNullOrEmpty( pathEnv ) )
             {
-                _path = new HashSet<string>( pathEnv.Split( Machine.IsUnix() ? ':' : ';' ) );
+                _path = new List<string>( pathEnv.Split( new char[] { Machine.IsUnix() ? ':' : ';' }, StringSplitOptions.RemoveEmptyEntries )
+                    .Select( s => s.Trim() )
+                    .Where( s => s.Length > 0 ) );
             }
             else
             {
-                _path = new HashSet<string>();
+                _path = new List<string>();
             }
         }
 
@@ -125,7 +127,7 @@ namespace Code.Cake
         /// Gets a mutable set of paths. This is initialized with the PATH environment variable but can be changed at any time.
         /// When getting the PATH variable with <see cref="GetEnvironmentVariable"/>, this set is returned as a joined string.
         /// </summary>
-        public ISet<string> EnvironmentPaths
+        public IList<string> EnvironmentPaths
         {
             get { return _path; }
         }
@@ -147,6 +149,9 @@ namespace Code.Cake
         {
             return Environment.GetEnvironmentVariables()
                 .Cast<System.Collections.DictionaryEntry>()
+                .Select( e => StringComparer.OrdinalIgnoreCase.Equals( e.Key, "PATH" ) 
+                                ? new System.Collections.DictionaryEntry( e.Key, GetEnvironmentVariable( "PATH" ) )
+                                : e )
                 .ToDictionary(
                 key => (string)key.Key,
                 value => value.Value as string,
