@@ -18,10 +18,8 @@ using Cake.Common.Text;
 namespace CodeCake
 {
     /// <summary>
-    /// Sample build "script".
-    /// Build scripts can be decorated with AddPath attributes that inject existing paths into the PATH environment variable. 
+    /// CodeCakeBuilder for Code.Cake.
     /// </summary>
-    [AddPath( "%LOCALAPPDATA%/My-Marvelous-Tools" )]
     [AddPath( "CodeCakeBuilder/Tools" )]
     [AddPath( "packages/**/tools*" )]
     public class Build : CodeCakeHost
