@@ -30,7 +30,7 @@ namespace CodeCake
         }
 
         /// <summary>
-        /// Prompts the user for one of the <paramref name="options"/> characters (case insensitive).
+        /// Prompts the user for one of the <paramref name="options"/> characters that MUST be uppercase.
         /// <see cref="IsInteractiveMode(ICakeContext)"/> must be true otherwise an <see cref="InvalidOperationException"/> is thrown.
         /// </summary>
         /// <param name="context">The context.</param>
@@ -38,16 +38,16 @@ namespace CodeCake
         /// Message that will be displayed in front of the input. 
         /// When null, no message is displayed, when not null, the options are automatically displayed: (Y/N/C).
         /// </param>
-        /// <param name="options">Allowed characters. This is case insensitive.</param>
-        /// <returns>The entered char, always in uppercase. Necessarily on of the <paramref name="options"/>.</returns>
+        /// <param name="options">Allowed characters that must be uppercase.</param>
+        /// <returns>The entered char (always in uppercase). Necessarily one of the <paramref name="options"/>.</returns>
         [CakeAliasCategory( "Interactive mode" )]
         [CakeMethodAlias]
         public static char ReadInteractiveOption( this ICakeContext context, string message, params char[] options )
         {
-            if( options == null || options.Length == 0 ) throw new ArgumentException( "At least one character for options must be provided." );
+            if( options == null || options.Length == 0 ) throw new ArgumentException( "At least one (uppercase) character for options must be provided." );
             if( !IsInteractiveMode( context ) ) throw new InvalidOperationException( "Interactions are not allowed." );
-            var oU = options.Select( c => char.ToUpperInvariant( c ) );
-            string choices = String.Join( "/", oU );
+            if( options.Any( c => char.IsLower( c ) ) ) throw new ArgumentException( "Options must be uppercase letter." );
+            string choices = String.Join( "/", options );
             if( message != null )
             {
                 if( string.IsNullOrWhiteSpace( message ) )
@@ -58,7 +58,7 @@ namespace CodeCake
             {
                 char c = char.ToUpperInvariant( Console.ReadKey().KeyChar );
                 Console.WriteLine();
-                if( oU.Contains( c ) ) return c;
+                if( options.Contains( c ) ) return c;
                 Console.Write( "Invalid choice '{0}'. Must be one of {1}: ", c, choices );
             }
         }
