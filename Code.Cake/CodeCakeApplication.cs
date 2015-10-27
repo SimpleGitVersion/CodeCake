@@ -125,7 +125,7 @@ namespace Code.Cake
             try
             {
                 var strategy = new DefaultExecutionStrategy( logger );
-                var report = engine.RunTarget( context, strategy, "Default" );
+                var report = engine.RunTarget( context, strategy, context.Arguments.GetArgument( "target" ) ?? "Default" );
                 if( report != null && !report.IsEmpty )
                 {
                     var printerReport = new CakeReportPrinter( console );
@@ -134,7 +134,7 @@ namespace Code.Cake
             }
             catch( Exception ex )
             {
-                logger.Error( "Error occured: '{0}'.", ex.Message );
+                logger.Error( "Error occurred: '{0}'.", ex.Message );
                 return -1;
             }
             return 0;
