@@ -5,6 +5,9 @@ using CodeCake;
 
 namespace Cake.Common
 {
+    /// <summary>
+    /// Provides Rijndael encrypt/uncrypt helpers.
+    /// </summary>
     public static class SecureFileAliases
     {
 
