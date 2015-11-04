@@ -66,6 +66,38 @@ namespace Code.Cake
         }
 
         /// <summary>
+        /// Temporary fix waiting for PR https://github.com/cake-build/cake/pull/485
+        /// </summary>
+        class SafeCakeLog : IVerbosityAwareLog
+        {
+            CakeBuildLog _logger;
+
+            public SafeCakeLog( CakeConsole c )
+            {
+                _logger = new CakeBuildLog( c );
+            }
+
+            public Verbosity Verbosity
+            {
+                get
+                {
+                    return _logger.Verbosity;
+                }
+            }
+
+            public void SetVerbosity( Verbosity verbosity )
+            {
+                _logger.SetVerbosity( verbosity );
+            }
+
+            public void Write( Verbosity verbosity, LogLevel level, string format, params object[] args )
+            {
+                if( args.Length == 0 ) format = format.Replace( "{", "{{" );
+                _logger.Write( verbosity, level, format, args );
+            }
+        }
+
+        /// <summary>
         /// Runs the application.
         /// </summary>
         /// <param name="args">Arguments.</param>
@@ -73,7 +105,7 @@ namespace Code.Cake
         public int Run( string[] args )
         {
             var console = new CakeConsole();
-            var logger = new CakeBuildLog( console );
+            var logger = new SafeCakeLog( console );
             var engine = new CakeEngine( logger );
 
             IFileSystem fileSystem = new FileSystem();
