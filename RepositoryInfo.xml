@@ -3,5 +3,6 @@
   <Branches>
     <Branch Name="master" VersionName="explore" CIVersionMode="LastReleaseBased" />
   </Branches>
+  <StartingVersionForCSemVer>v0.6.0-rc</StartingVersionForCSemVer>
   <!-- <Debug IgnoreDirtyWorkingFolder="true"/> -->
 </RepositoryInfo>
