@@ -136,12 +136,13 @@ namespace Code.Cake
             environment.WorkingDirectory = new DirectoryPath( _solutionDirectory );
 
             // Adds additional paths from chosen build.
-            HashSet<string> additionals = new HashSet<string>( environment.EnvironmentPaths );
+            HashSet<string> additionals = new HashSet<string>();
             foreach( var pattern in choosenBuild.AdditionnalPatternPaths )
             {
                 string expansed = Environment.ExpandEnvironmentVariables( pattern );
                 additionals.UnionWith( globber.GetDirectories( expansed ).Select( p => p.FullPath ) );
             }
+            additionals.ExceptWith( environment.EnvironmentPaths );
             if( additionals.Count > 0 )
             {
                 logger.Information( "Path(s) added: " + String.Join( ", ", additionals ) );
@@ -151,11 +152,12 @@ namespace Code.Cake
                 }
             }
 
-            CodeCakeHost._injectedActualHost = new BuildScriptHost( engine, context );
-            CodeCakeHost c = (CodeCakeHost)Activator.CreateInstance( choosenBuild.Type );
-
             try
             {
+                // Instanciates the script object.
+                CodeCakeHost._injectedActualHost = new BuildScriptHost( engine, context );
+                CodeCakeHost c = (CodeCakeHost)Activator.CreateInstance( choosenBuild.Type );
+
                 var strategy = new DefaultExecutionStrategy( logger );
                 var report = engine.RunTarget( context, strategy, context.Arguments.GetArgument( "target" ) ?? "Default" );
                 if( report != null && !report.IsEmpty )
