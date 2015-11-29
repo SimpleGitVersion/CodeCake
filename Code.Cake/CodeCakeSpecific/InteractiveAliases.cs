@@ -69,16 +69,18 @@ namespace CodeCake
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="variable">The environment variable.</param>
+        /// <param name="setCache">By default, if the value is interactively read, it is stored in the process environment variables.</param>
         /// <returns>Retrieves the value of the environment variable or null if the environment variable do not exist.</returns>
         [CakeAliasCategory( "Environment Variables" )]
         [CakeMethodAlias]
-        public static string InteractiveEnvironmentVariable( this ICakeContext context, string variable )
+        public static string InteractiveEnvironmentVariable( this ICakeContext context, string variable, bool setCache = true )
         {
             string v = context.EnvironmentVariable( variable );
             if( v == null && IsInteractiveMode( context ) )
             {
                 Console.Write( "Environment Variable '{0}' not found. Enter its value: ", variable );
                 v = Console.ReadLine();
+                if( setCache ) Environment.SetEnvironmentVariable( variable, v );
             }
             return v;
         }
