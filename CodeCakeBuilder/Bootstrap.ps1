@@ -21,15 +21,13 @@ if (!(Test-Path $builderPackageConfig)) {
     Throw "Could not find packages.config"
 }
 
-# Find MSBuild 4.0.
-$dotNetVersion = "4.0"
-$regKey = "HKLM:\software\Microsoft\MSBuild\ToolsVersions\$dotNetVersion"
+# Find MSBuild 14.0 (C# 6 - Roselyn compiler).
+$regKey = "HKLM:\software\Microsoft\MSBuild\ToolsVersions\14.0"
 $regProperty = "MSBuildToolsPath"
 $msbuildExe = join-path -path (Get-ItemProperty $regKey).$regProperty -childpath "msbuild.exe"
 if (!(Test-Path $msbuildExe)) {
-    Throw "Could not find msbuild.exe"
+    Throw "Could not find msbuild.exe MSBuild 14.0 (C# 6 - Roselyn compiler). You may install "Microsoft Build Tools 2015" (https://www.microsoft.com/en-us/download/details.aspx?id=48159)."
 }
-
 
 # Tools directory is for nuget.exe but it may be used to 
 # contain other utilities.
