@@ -45,7 +45,7 @@ namespace CodeCake
                     else
                     {
                         configuration = "Debug";
-                        Cake.Warning( "Repository is not ready to be published. Selecting Debug configuration." );
+                        Cake.Warning( "Repository is not ready to be published. Selecting '{0}' configuration.", configuration );
                     }
                 } );
 
