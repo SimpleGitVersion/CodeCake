@@ -66,9 +66,12 @@
     <Compile Include="CakeConsole.cs" />
     <Compile Include="CakeReportPrinter.cs" />
     <Compile Include="CodeCakeApplication.cs" />
+    <Compile Include="CodeCakeSpecific\Termination\CakeTerminateException.cs" />
     <Compile Include="CodeCakeSpecific\CodeCakeBuildTypeDescriptor.cs" />
     <Compile Include="CodeCakeSpecific\CodeCakeHost.cs" />
     <Compile Include="CodeCakeSpecific\FileAndPathAliases.cs" />
+    <Compile Include="CodeCakeSpecific\Termination\CakeTerminationOption.cs" />
+    <Compile Include="CodeCakeSpecific\Termination\TerminateAliases.cs" />
     <Compile Include="CodeCakeSpecific\InteractiveAliases.cs" />
     <Compile Include="CodeCakeSpecific\SecureFiles\RijndaelCrypt.cs" />
     <Compile Include="CodeCakeSpecific\SecureFiles\SecureFilesAliases.cs" />

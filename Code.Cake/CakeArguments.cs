@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Cake.Core;
 
-namespace Code.Cake
+namespace CodeCake
 {
     internal sealed class CakeArguments : ICakeArguments
     {

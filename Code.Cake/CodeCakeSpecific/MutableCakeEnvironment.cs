@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using Cake.Core;
 using System.Linq;
 
-namespace Code.Cake
+namespace CodeCake
 {
     /// <summary>
     /// Represents the environment Cake operates in. This mutable implementation allows the PATH environment variable

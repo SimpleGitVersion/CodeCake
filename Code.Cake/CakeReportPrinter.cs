@@ -4,7 +4,7 @@ using System.Globalization;
 using System.Linq;
 using Cake.Core;
 
-namespace Code.Cake
+namespace CodeCake
 {
     internal sealed class CakeReportPrinter : ICakeReportPrinter
     {

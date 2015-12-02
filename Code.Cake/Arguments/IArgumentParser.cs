@@ -1,5 +1,4 @@
-﻿using Code.Cake;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace Cake.Arguments
 {

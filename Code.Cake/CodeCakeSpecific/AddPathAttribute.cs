@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Code.Cake
+namespace CodeCake
 {
     /// <summary>
     /// Decorates <see cref="CodeCakeHost"/> classes.

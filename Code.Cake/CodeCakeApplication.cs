@@ -12,10 +12,10 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Code.Cake
+namespace CodeCake
 {
     /// <summary>
-    /// Crappy implementation: it is just a POC.
+    /// Crappy implementation... but it works.
     /// </summary>
     public class CodeCakeApplication
     {
@@ -164,6 +164,22 @@ namespace Code.Cake
                 {
                     var printerReport = new CakeReportPrinter( console );
                     printerReport.Write( report );
+                }
+            }
+            catch( CakeTerminateException ex )
+            {
+                switch( ex.Option )
+                {
+                    case CakeTerminationOption.Error:
+                        logger.Error( "Termination with Error: '{0}'.", ex.Message );
+                        return -1;
+                    case CakeTerminationOption.Warning:
+                        logger.Warning( "Termination with Warning: '{0}'.", ex.Message );
+                        break;
+                    default:
+                        Debug.Assert( ex.Option == CakeTerminationOption.Success );
+                        logger.Information( "Termination with Success: '{0}'.", ex.Message );
+                        break;
                 }
             }
             catch( Exception ex )

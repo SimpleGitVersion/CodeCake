@@ -37,9 +37,16 @@ namespace CodeCake
                 .Does( () =>
                 {
                     gitInfo = Cake.GetSimpleRepositoryInfo();
-                    if( !gitInfo.IsValid ) throw new Exception( "Repository is not ready to be published." );
-                    configuration = gitInfo.IsValidRelease && gitInfo.PreReleaseName.Length == 0 ? "Release" : "Debug";
-                    Cake.Information( "Publishing {0} in {1}.", gitInfo.SemVer, configuration );
+                    if( gitInfo.IsValid )
+                    {
+                        configuration = gitInfo.IsValidRelease && gitInfo.PreReleaseName.Length == 0 ? "Release" : "Debug";
+                        Cake.Information( "Publishing {0} in {1}.", gitInfo.SemVer, configuration );
+                    }
+                    else
+                    {
+                        configuration = "Debug";
+                        Cake.Warning( "Repository is not ready to be published. Selecting Debug configuration." );
+                    }
                 } );
 
             Task( "Clean" )
@@ -84,6 +91,7 @@ namespace CodeCake
 
             Task( "Create-NuGet-Packages" )
                 .IsDependentOn( "Build" )
+                .WithCriteria( () => gitInfo.IsValid )
                 .Does( () =>
                 {
                     Cake.CreateDirectory( releasesDir );
@@ -107,6 +115,7 @@ namespace CodeCake
 
             Task( "Push-NuGet-Packages" )
                 .IsDependentOn( "Create-NuGet-Packages" )
+                .WithCriteria( () => gitInfo.IsValid )
                 .Does( () =>
                 {
                     IEnumerable<FilePath> nugetPackages = Cake.GetFiles( releasesDir.Path + "/*.nupkg" );

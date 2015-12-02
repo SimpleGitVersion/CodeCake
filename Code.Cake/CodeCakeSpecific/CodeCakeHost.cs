@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Code.Cake
+namespace CodeCake
 {
     /// <summary>
     /// Base class for build objects.

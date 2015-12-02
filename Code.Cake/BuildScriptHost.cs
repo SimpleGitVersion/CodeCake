@@ -3,7 +3,7 @@ using Cake.Core.Diagnostics;
 using Cake.Core.Scripting;
 using System;
 
-namespace Code.Cake
+namespace CodeCake
 {
     /// <summary>
     /// The script host used to execute Cake scripts.

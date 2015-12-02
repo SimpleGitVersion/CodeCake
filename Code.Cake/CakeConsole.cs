@@ -1,7 +1,7 @@
 ﻿using System;
 using Cake.Core;
 
-namespace Code.Cake
+namespace CodeCake
 {
     internal sealed class CakeConsole : IConsole
     {
