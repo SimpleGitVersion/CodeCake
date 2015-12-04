@@ -5,6 +5,7 @@ using Cake.Core.IO;
 using System.Collections.Generic;
 using Cake.Core;
 using System.Linq;
+using System.Runtime.Versioning;
 
 namespace CodeCake
 {
@@ -157,5 +158,18 @@ namespace CodeCake
                 value => value.Value as string,
                 StringComparer.OrdinalIgnoreCase );
         }
+        /// <summary>
+        /// Gets the target .Net framework version that the current AppDomain is targeting.
+        /// </summary>
+        /// <returns>The target framework.</returns>
+        public FrameworkName GetTargetFramework()
+        {
+            // Try to get the current framework name from the current application domain,
+            // but if that is null, we default to .NET 4.5. The reason for doing this is
+            // that this actually is what happens on Mono.
+            var frameworkName = AppDomain.CurrentDomain.SetupInformation.TargetFrameworkName;
+            return new FrameworkName( frameworkName ?? ".NETFramework,Version=v4.5" );
+        }
+
     }
 }
