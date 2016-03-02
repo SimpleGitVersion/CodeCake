@@ -13,22 +13,30 @@ namespace CodeCake
     public class AddPathAttribute : Attribute
     {
         /// <summary>
-        /// Initializes a new <see cref="AddPathAttribute"/> with a pattern. Examples: 
+        /// Initializes a new <see cref="AddPathAttribute"/> with a path that can be a pattern with * and ?. Examples: 
         /// <code>[AddPath( "%LOCALAPPDATA%/NuGet" )]</code> or <code>[AddPath( "packages/**/tools/**" )]</code>.
         /// </summary>
-        /// <param name="pattern">
-        /// The pattern that will be expansed in PATH environement variable.
+        /// <param name="path">
+        /// The path that will be expansed in PATH environement variable.
         /// It it relative to the Solution directory.
         /// </param>
-        public AddPathAttribute( string pattern )
+        /// <param name="isDynamicPath">False to take only pre-existing folders on the file system.</param>
+        public AddPathAttribute( string path, bool isDynamicPath = true )
         {
-            Pattern = pattern;
+            Path = path;
+            IsDynamicPath = isDynamicPath;
         }
+
+        /// <summary>
+        /// Gets whether the path is a dynamic path: it will be recomputed each time it is needed instead of 
+        /// being expansed/globbed at the start of the build script (folders and files must pre-exist on the file system).
+        /// </summary>
+        public bool IsDynamicPath { get; }
 
         /// <summary>
         /// Gets the pattern that will be expansed in PATH environement variable.
         /// It it relative to the Solution directory.
         /// </summary>
-        public string Pattern { get; private set; }
+        public string Path { get; private set; }
     }
 }

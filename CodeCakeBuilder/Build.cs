@@ -23,8 +23,12 @@ namespace CodeCake
     /// <summary>
     /// CodeCakeBuilder for Code.Cake.
     /// </summary>
-    [AddPath( "CodeCakeBuilder/Tools" )]
-    [AddPath( "packages/**/tools*" )]
+    [AddPath( "CodeCakeBuilder/Tools", isDynamicPath: false )]
+    [AddPath( "packages/**/tools*", isDynamicPath: false )]
+    // These dynamic paths are used to test the dynamic path feature itself.
+    // This is the default (starting with version v0.8.0).
+    [AddPath( "CodeCakeBuilder/**/TestDynamic?", isDynamicPath: true )]
+    [AddPath( "CodeCakeBuilder/AutoTests", isDynamicPath: true )]
     public class Build : CodeCakeHost
     {
         public Build()
@@ -64,10 +68,35 @@ namespace CodeCake
                     Cake.NuGetRestore( "CodeCake.sln" );
                 } );
 
+            Task( "AutoTests" )
+               .Does( () =>
+               {
+                   if( System.IO.Directory.Exists( "CodeCakeBuilder/AutoTests" ) ) Cake.DeleteDirectory( "CodeCakeBuilder/AutoTests", true );
+
+                   ShouldFindAutoTestFolderFromDynamicPaths( false );
+                   ShouldFindTestTxtFileFromDynamicPaths( false );
+                   Cake.CreateDirectory( "CodeCakeBuilder/AutoTests/TestDynamic0" );
+                   ShouldFindAutoTestFolderFromDynamicPaths( true );
+                   ShouldFindTestTxtFileFromDynamicPaths( false );
+                   System.IO.File.WriteAllText( "CodeCakeBuilder/AutoTests/TestDynamic0/Test.txt", "c" );
+                   ShouldFindAutoTestFolderFromDynamicPaths( true );
+                   ShouldFindTestTxtFileFromDynamicPaths( true );
+                   Cake.DeleteDirectory( "CodeCakeBuilder/AutoTests/TestDynamic0", true );
+                   Cake.CreateDirectory( "CodeCakeBuilder/AutoTests/Sub/TestDynamicB" );
+                   ShouldFindAutoTestFolderFromDynamicPaths( true );
+                   ShouldFindTestTxtFileFromDynamicPaths( false );
+                   System.IO.File.WriteAllText( "CodeCakeBuilder/AutoTests/Sub/TestDynamicB/Test.txt", "c" );
+                   ShouldFindTestTxtFileFromDynamicPaths( true );
+                   Cake.DeleteDirectory( "CodeCakeBuilder/AutoTests", true );
+                   ShouldFindTestTxtFileFromDynamicPaths( false );
+                   ShouldFindAutoTestFolderFromDynamicPaths( false );
+               } );
+
             Task( "Build" )
                 .IsDependentOn( "Clean" )
                 .IsDependentOn( "Restore-NuGet-Packages" )
                 .IsDependentOn( "Check-Repository" )
+                .IsDependentOn( "AutoTests" )
                 .Does( () =>
                 {
                     Cake.Information( "Building CodeCake.sln with '{0}' configuration (excluding this builder application).", configuration );
@@ -90,28 +119,28 @@ namespace CodeCake
                 } );
 
             Task( "Create-NuGet-Packages" )
-                .IsDependentOn( "Build" )
-                .WithCriteria( () => gitInfo.IsValid )
-                .Does( () =>
-                {
-                    Cake.CreateDirectory( releasesDir );
-                    var settings = new NuGetPackSettings()
+                    .IsDependentOn( "Build" )
+                    .WithCriteria( () => gitInfo.IsValid )
+                    .Does( () =>
                     {
-                        Version = gitInfo.NuGetVersion,
-                        BasePath = Cake.Environment.WorkingDirectory,
-                        OutputDirectory = releasesDir
-                    };
-                    Cake.CopyFiles( "CodeCakeBuilder/NuSpec/*.nuspec", releasesDir );
-                    foreach( var nuspec in Cake.GetFiles( releasesDir.Path + "/*.nuspec" ) )
-                    {
-                        Cake.TransformTextFile( nuspec, "{{", "}}" )
-                                .WithToken( "configuration", configuration )
-                                .WithToken( "CSemVer", gitInfo.SemVer )
-                                .Save( nuspec );
-                        Cake.NuGetPack( nuspec, settings );
-                    }
-                    Cake.DeleteFiles( releasesDir.Path + "/*.nuspec" );
-                } );
+                        Cake.CreateDirectory( releasesDir );
+                        var settings = new NuGetPackSettings()
+                        {
+                            Version = gitInfo.NuGetVersion,
+                            BasePath = Cake.Environment.WorkingDirectory,
+                            OutputDirectory = releasesDir
+                        };
+                        Cake.CopyFiles( "CodeCakeBuilder/NuSpec/*.nuspec", releasesDir );
+                        foreach( var nuspec in Cake.GetFiles( releasesDir.Path + "/*.nuspec" ) )
+                        {
+                            Cake.TransformTextFile( nuspec, "{{", "}}" )
+                                    .WithToken( "configuration", configuration )
+                                    .WithToken( "CSemVer", gitInfo.SemVer )
+                                    .Save( nuspec );
+                            Cake.NuGetPack( nuspec, settings );
+                        }
+                        Cake.DeleteFiles( releasesDir.Path + "/*.nuspec" );
+                    } );
 
             Task( "Push-NuGet-Packages" )
                 .IsDependentOn( "Create-NuGet-Packages" )
@@ -144,6 +173,22 @@ namespace CodeCake
 
             Task( "Default" ).IsDependentOn( "Push-NuGet-Packages" );
 
+        }
+
+        private void ShouldFindAutoTestFolderFromDynamicPaths( bool shouldFind )
+        {
+            string[] paths = Cake.Environment.GetEnvironmentVariable( "PATH" ).Split( new char[] { Machine.IsUnix() ? ':' : ';' }, StringSplitOptions.RemoveEmptyEntries );
+            // Cake does not normalize the paths to System.IO.Path.DirectorySeparatorChar. We do it here.
+            string af = Cake.Environment.WorkingDirectory.FullPath + "/CodeCakeBuilder/AutoTests".Replace( '\\', '/' );
+            bool autoFolder = paths.Select( p => p.Replace( '\\', '/' ) ).Contains( af );
+            if( autoFolder != shouldFind ) throw new Exception( shouldFind ? "AutoTests folder should be found." : "AutoTests folder should not be found." );
+        }
+
+        private void ShouldFindTestTxtFileFromDynamicPaths( bool shouldFind )
+        {
+            string[] paths = Cake.Environment.GetEnvironmentVariable( "PATH" ).Split( new char[] { Machine.IsUnix() ? ':' : ';' }, StringSplitOptions.RemoveEmptyEntries );
+            bool findTestTxtFileInPath = paths.Select( p => System.IO.Path.Combine( p, "Test.txt" ) ).Any( f => System.IO.File.Exists( f ) );
+            if( findTestTxtFileInPath != shouldFind ) throw new Exception( shouldFind ? "Should find Text.txt file." : "Should not find Test.txt file." );
         }
 
         private void PushNuGetPackages( string apiKeyName, string pushUrl, IEnumerable<FilePath> nugetPackages )

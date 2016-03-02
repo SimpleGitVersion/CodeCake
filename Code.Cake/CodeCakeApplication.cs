@@ -111,6 +111,7 @@ namespace CodeCake
             IFileSystem fileSystem = new FileSystem();
             MutableCakeEnvironment environment = new MutableCakeEnvironment();
             IGlobber globber = new Globber( fileSystem, environment );
+            environment.Initialize( globber );
             ICakeArguments arguments = new CakeArguments();
             IProcessRunner processRunner = new ProcessRunner( environment, logger );
             IRegistry windowsRegistry = new WindowsRegistry();
@@ -136,21 +137,12 @@ namespace CodeCake
             environment.WorkingDirectory = new DirectoryPath( _solutionDirectory );
 
             // Adds additional paths from chosen build.
-            HashSet<string> additionals = new HashSet<string>();
-            foreach( var pattern in choosenBuild.AdditionnalPatternPaths )
+            foreach( var p in choosenBuild.AdditionnalPatternPaths )
             {
-                string expansed = Environment.ExpandEnvironmentVariables( pattern );
-                additionals.UnionWith( globber.GetDirectories( expansed ).Select( p => p.FullPath ) );
+                environment.AddPath( p );
             }
-            additionals.ExceptWith( environment.EnvironmentPaths );
-            if( additionals.Count > 0 )
-            {
-                logger.Information( "Path(s) added: " + String.Join( ", ", additionals ) );
-                foreach( var p in additionals )
-                {
-                    environment.EnvironmentPaths.Add( p );
-                }
-            }
+            logger.Information( "Path(s) added: " + string.Join( ", ", environment.EnvironmentAddedPaths ) );
+            logger.Information( "Dynamic pattern path(s) added: " + string.Join( ", ", environment.EnvironmentDynamicPaths ) );
 
             try
             {

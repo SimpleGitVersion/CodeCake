@@ -12,7 +12,7 @@ namespace CodeCake
     public class CodeCakeBuildTypeDescriptor
     {
         readonly Type _type;
-        readonly HashSet<string> _additionalPatternPaths;
+        readonly List<EnvironmentAddedPath> _additionalPatternPaths;
 
         /// <summary>
         /// initializes a new <see cref="CodeCakeBuildTypeDescriptor"/>.
@@ -21,17 +21,17 @@ namespace CodeCake
         internal CodeCakeBuildTypeDescriptor( Type t )
         {
             _type = t;
-            _additionalPatternPaths = new HashSet<string>( _type.GetCustomAttributes( false ).OfType<AddPathAttribute>().Select( a => a.Pattern ) );
+            _additionalPatternPaths = _type.GetCustomAttributes( false ).OfType<AddPathAttribute>().Select( a => new EnvironmentAddedPath(a.Path,a.IsDynamicPath ) ).ToList();
         }
 
         /// <summary>
         /// Gets the type of the build object.
         /// </summary>
-        public Type Type { get { return _type; } }
+        public Type Type => _type;
 
         /// <summary>
         /// Gets a set of pattern paths that should be available when executing script.
         /// </summary>
-        public ISet<string> AdditionnalPatternPaths { get { return _additionalPatternPaths; } }
+        public IReadOnlyList<EnvironmentAddedPath> AdditionnalPatternPaths => _additionalPatternPaths;
     }
 }

@@ -66,6 +66,7 @@
     <Compile Include="CakeConsole.cs" />
     <Compile Include="CakeReportPrinter.cs" />
     <Compile Include="CodeCakeApplication.cs" />
+    <Compile Include="CodeCakeSpecific\EnvironmentAddedPath.cs" />
     <Compile Include="CodeCakeSpecific\Termination\CakeTerminateException.cs" />
     <Compile Include="CodeCakeSpecific\CodeCakeBuildTypeDescriptor.cs" />
     <Compile Include="CodeCakeSpecific\CodeCakeHost.cs" />
