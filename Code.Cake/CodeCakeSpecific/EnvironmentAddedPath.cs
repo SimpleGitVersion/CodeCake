@@ -6,6 +6,11 @@ using System.Threading.Tasks;
 
 namespace CodeCake
 {
+    /// <summary>
+    /// Captures a path that must be added to the PATH environment variable.
+    /// When <see cref="IsDynamicPattern"/> is true, the path is expansed and/or gobbled
+    /// dynamically instead of beeing resolved at the very beginning of the build script execution.
+    /// </summary>
     public struct EnvironmentAddedPath
     {
         /// <summary>
