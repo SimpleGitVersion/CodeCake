@@ -14,8 +14,8 @@
     <copyright>Copyright (c) Invenietis</copyright>
     <tags>CodeCake Cake Script Build</tags>
     <dependencies>
-      <dependency id="Cake.Core" version="0.10.0" />
-      <dependency id="Cake.Common" version="0.10.0" />
+      <dependency id="Cake.Core" version="0.11.0" />
+      <dependency id="Cake.Common" version="0.11.0" />
     </dependencies>
   </metadata>
   <files>

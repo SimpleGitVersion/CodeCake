@@ -22,23 +22,36 @@ namespace CodeCake
         /// </summary>
         public CakeArguments()
         {
-            _arguments = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            _arguments = new Dictionary<string, string>( StringComparer.OrdinalIgnoreCase );
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CakeArguments"/> class based on the given dictionary of arguments.
+        /// </summary>
+        /// <param name="arguments">The arguments.</param>
+        public CakeArguments( IDictionary<string, string> arguments )
+        {
+            if( arguments == null )
+            {
+                throw new ArgumentNullException( "arguments" );
+            }
+            _arguments = new Dictionary<string, string>( arguments, StringComparer.OrdinalIgnoreCase );
         }
 
         /// <summary>
         /// Initializes the argument list.
         /// </summary>
         /// <param name="arguments">The arguments.</param>
-        public void SetArguments(IDictionary<string, string> arguments)
+        public void SetArguments( IDictionary<string, string> arguments )
         {
-            if (arguments == null)
+            if( arguments == null )
             {
-                throw new ArgumentNullException("arguments");
+                throw new ArgumentNullException( "arguments" );
             }
             _arguments.Clear();
-            foreach (var argument in arguments)
+            foreach( var argument in arguments )
             {
-                _arguments.Add(argument.Key, argument.Value);
+                _arguments.Add( argument.Key, argument.Value );
             }
         }
 
@@ -49,9 +62,9 @@ namespace CodeCake
         /// <returns>
         ///   <c>true</c> if the argument exist; otherwise <c>false</c>.
         /// </returns>
-        public bool HasArgument(string name)
+        public bool HasArgument( string name )
         {
-            return _arguments.ContainsKey(name);
+            return _arguments.ContainsKey( name );
         }
 
         /// <summary>
@@ -59,9 +72,9 @@ namespace CodeCake
         /// </summary>
         /// <param name="name">The argument name.</param>
         /// <returns>The argument value.</returns>
-        public string GetArgument(string name)
+        public string GetArgument( string name )
         {
-            return _arguments.ContainsKey(name)
+            return _arguments.ContainsKey( name )
                 ? _arguments[name] : null;
         }
     }

@@ -112,7 +112,6 @@ namespace CodeCake
             MutableCakeEnvironment environment = new MutableCakeEnvironment();
             IGlobber globber = new Globber( fileSystem, environment );
             environment.Initialize( globber );
-            ICakeArguments arguments = new CakeArguments();
             IProcessRunner processRunner = new ProcessRunner( environment, logger );
             IRegistry windowsRegistry = new WindowsRegistry();
 
@@ -128,10 +127,11 @@ namespace CodeCake
                 return -1;
             }
 
+            ICakeArguments arguments = new CakeArguments(options.Arguments);
+
             var context = new CakeContext( fileSystem, environment, globber, logger, arguments, processRunner, windowsRegistry );
 
             // Copy the arguments from the options.
-            context.Arguments.SetArguments( options.Arguments );
 
             // Set the working directory: the solution directory.
             environment.WorkingDirectory = new DirectoryPath( _solutionDirectory );
