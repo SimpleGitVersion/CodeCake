@@ -41,16 +41,16 @@ namespace CodeCake
                 .Does( () =>
                 {
                     gitInfo = Cake.GetSimpleRepositoryInfo();
-                    if( gitInfo.IsValid )
+                    if( !gitInfo.IsValid )
                     {
-                        configuration = gitInfo.IsValidRelease && gitInfo.PreReleaseName.Length == 0 ? "Release" : "Debug";
-                        Cake.Information( "Publishing {0} in {1}.", gitInfo.SemVer, configuration );
+                        if( Cake.IsInteractiveMode()
+                            && Cake.ReadInteractiveOption( "Repository is not ready to be published. Proceed anyway?", 'Y', 'N' ) == 'Y' )
+                        {
+                            Cake.Warning( "GitInfo is not valid, but you choose to continue..." );
+                        }
+                        else throw new Exception( "Repository is not ready to be published." );
                     }
-                    else
-                    {
-                        configuration = "Debug";
-                        Cake.Warning( "Repository is not ready to be published. Selecting '{0}' configuration.", configuration );
-                    }
+                    configuration = gitInfo.IsValidRelease && gitInfo.PreReleaseName.Length == 0 ? "Release" : "Debug";
                 } );
 
             Task( "Clean" )
@@ -162,7 +162,17 @@ namespace CodeCake
                     }
                     if( gitInfo.IsValidRelease )
                     {
-                        PushNuGetPackages( "NUGET_API_KEY", "https://www.nuget.org/api/v2/package", nugetPackages );
+                        if( gitInfo.PreReleaseName == ""
+                            || gitInfo.PreReleaseName == "prerelease"
+                            || gitInfo.PreReleaseName == "rc" )
+                        {
+                            PushNuGetPackages( "NUGET_API_KEY", "https://www.nuget.org/api/v2/package", nugetPackages );
+                        }
+                        else
+                        {
+                            // An alpha, beta, delta, epsilon, gamma, kappa goes to invenietis-prerelease.
+                            PushNuGetPackages( "MYGET_PRERELEASE_API_KEY", "https://www.myget.org/F/invenietis-prerelease/api/v2/package", nugetPackages );
+                        }
                     }
                     else
                     {

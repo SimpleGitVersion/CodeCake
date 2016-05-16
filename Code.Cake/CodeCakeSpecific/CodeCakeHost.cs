@@ -12,7 +12,7 @@ namespace CodeCake
     /// <summary>
     /// Base class for build objects.
     /// </summary>
-    public abstract class CodeCakeHost : ICodeCakeHost
+    public abstract class CodeCakeHost
     {
         [ThreadStatic]
         internal static IScriptHost _injectedActualHost;
@@ -37,10 +37,20 @@ namespace CodeCake
         }
 
         /// <summary>
+        /// Obsolete: Use Setup( Action&lt;ICakeContext&gt; ) instead.
+        /// </summary>
+        /// <param name="action"></param>
+        [Obsolete( "Use Setup( Action<ICakeContext> ) instead." )]
+        public void Setup( Action action )
+        {
+            _host.Setup( action );
+        }
+
+        /// <summary>
         /// Registers the Setup operation.
         /// </summary>
         /// <param name="action">Action to execute.</param>
-        public void Setup( Action action )
+        public void Setup( Action<ICakeContext> action )
         {
             _host.Setup( action );
         }
@@ -56,10 +66,20 @@ namespace CodeCake
         }
 
         /// <summary>
+        /// Obsolete: Use Teardown( Action&lt;ICakeContext&gt; ) instead.
+        /// </summary>
+        /// <param name="action"></param>
+        [Obsolete( "Use Teardown( Action<ICakeContext> ) instead." )]
+        public void Teardown( Action action )
+        {
+            _host.Teardown( action );
+        }
+
+        /// <summary>
         /// Registers the Teardown action.
         /// </summary>
         /// <param name="action">Action to execute.</param>
-        public void Teardown( Action action )
+        public void Teardown( Action<ICakeContext> action )
         {
             _host.Teardown( action );
         }

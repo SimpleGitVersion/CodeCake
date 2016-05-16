@@ -174,6 +174,11 @@ namespace CodeCake
                         break;
                 }
             }
+            catch( TargetInvocationException ex )
+            {
+                logger.Error( "Error occurred: '{0}'.", ex.InnerException?.Message ?? ex.Message );
+                return -1;
+            }
             catch( Exception ex )
             {
                 logger.Error( "Error occurred: '{0}'.", ex.Message );

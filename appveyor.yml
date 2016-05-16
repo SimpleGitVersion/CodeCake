@@ -7,6 +7,8 @@ branches:
 environment:
   NUGET_API_KEY:
     secure: Cx0q/gQZQpP3eDf6H9lzIDpYYki+sGCpruxgDcFUJRoYdpH7l5aDh7afloH3uNLD
+  MYGET_PRERELEASE_API_KEY:
+    secure: BmENGV1y8uv5cLhMhwpoDLwQiLJh4C66c53+FW8FuuVfu5Lf4Ac6NvSuqO/1MbPm
   MYGET_EXPLORE_API_KEY:
     secure: ZD+bH7GWRWC3hSiziFlXdMdV9X3uV1D9xlRwzLZ8jJwEqIMCA+HxKWobuf3WVBH6
 install:
