@@ -7,10 +7,10 @@ branches:
 environment:
   NUGET_API_KEY:
     secure: Cx0q/gQZQpP3eDf6H9lzIDpYYki+sGCpruxgDcFUJRoYdpH7l5aDh7afloH3uNLD
-  MYGET_PRERELEASE_API_KEY:
-    secure: BmENGV1y8uv5cLhMhwpoDLwQiLJh4C66c53+FW8FuuVfu5Lf4Ac6NvSuqO/1MbPm
-  MYGET_EXPLORE_API_KEY:
-    secure: ZD+bH7GWRWC3hSiziFlXdMdV9X3uV1D9xlRwzLZ8jJwEqIMCA+HxKWobuf3WVBH6
+  MYGET_PREVIEW_API_KEY:
+    secure: CfEqNYjhrGX9DyalZ4jcadzJ/x8q25GulMCbZQDRRs+XetfHn2AEP79OJXE1wSJ8
+  MYGET_CI_API_KEY:
+    secure: jhHWme6+MulQTwEN1kkwygP2kEf47L8SyndWGQWEvPn6dRwZh9ZQXXGz4e1Xk7q0
 install:
 - ps: CodeCakeBuilder\Bootstrap.ps1
 build_script:

@@ -12,7 +12,7 @@ namespace Cake.Diagnostics
         private readonly object _lock;
         private readonly IDictionary<LogLevel, ConsolePalette> _palettes;
 
-        public Verbosity Verbosity { get; private set; }
+        public Verbosity Verbosity { get; set; }
 
         public CakeBuildLog(IConsole console, Verbosity verbosity = Verbosity.Normal)
         {

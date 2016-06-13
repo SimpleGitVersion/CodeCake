@@ -1,8 +1,10 @@
 ﻿using Cake.Arguments;
 using Cake.Core;
+using Cake.Core.Configuration;
 using Cake.Core.Diagnostics;
 using Cake.Core.IO;
 using Cake.Core.IO.NuGet;
+using Cake.Core.Tooling;
 using Cake.Diagnostics;
 using System;
 using System.Collections.Generic;
@@ -79,10 +81,8 @@ namespace CodeCake
 
             public Verbosity Verbosity
             {
-                get
-                {
-                    return _logger.Verbosity;
-                }
+                get { return _logger.Verbosity; }
+                set { _logger.Verbosity = value; }
             }
 
             public void SetVerbosity( Verbosity verbosity )
@@ -114,11 +114,16 @@ namespace CodeCake
             environment.Initialize( globber );
             IProcessRunner processRunner = new ProcessRunner( environment, logger );
             IRegistry windowsRegistry = new WindowsRegistry();
-
             // Parse options.
             var argumentParser = new ArgumentParser( logger, fileSystem );
-            var options = argumentParser.Parse( args );
+            CakeOptions options = argumentParser.Parse( args );
             Debug.Assert( options != null );
+            CakeConfigurationProvider configProvider = new CakeConfigurationProvider( fileSystem, environment );
+            ICakeConfiguration configuration = configProvider.CreateConfiguration( options.Arguments );
+            IToolRepository toolRepo = new ToolRepository( environment );
+            IToolResolutionStrategy toolStrategy = new ToolResolutionStrategy( fileSystem, environment, globber, configuration );
+            IToolLocator locator = new ToolLocator( environment, toolRepo, toolStrategy );
+            IToolLocator toolLocator = new ToolLocator( environment, toolRepo, toolStrategy  );
             logger.SetVerbosity( options.Verbosity );
             CodeCakeBuildTypeDescriptor choosenBuild;
             if( !AvailableBuilds.TryGetValue( options.Script, out choosenBuild ) )
@@ -129,7 +134,7 @@ namespace CodeCake
 
             ICakeArguments arguments = new CakeArguments(options.Arguments);
 
-            var context = new CakeContext( fileSystem, environment, globber, logger, arguments, processRunner, windowsRegistry );
+            var context = new CakeContext( fileSystem, environment, globber, logger, arguments, processRunner, windowsRegistry, locator );
 
             // Copy the arguments from the options.
 
