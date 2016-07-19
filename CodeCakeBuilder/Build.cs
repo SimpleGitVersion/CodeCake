@@ -187,7 +187,7 @@ namespace CodeCake
 
         private void ShouldFindAutoTestFolderFromDynamicPaths( bool shouldFind )
         {
-            string[] paths = Cake.Environment.GetEnvironmentVariable( "PATH" ).Split( new char[] { Machine.IsUnix() ? ':' : ';' }, StringSplitOptions.RemoveEmptyEntries );
+            string[] paths = Cake.Environment.GetEnvironmentVariable( "PATH" ).Split( new char[] { Cake.Environment.Platform.IsUnix() ? ':' : ';' }, StringSplitOptions.RemoveEmptyEntries );
             // Cake does not normalize the paths to System.IO.Path.DirectorySeparatorChar. We do it here.
             string af = Cake.Environment.WorkingDirectory.FullPath + "/CodeCakeBuilder/AutoTests".Replace( '\\', '/' );
             bool autoFolder = paths.Select( p => p.Replace( '\\', '/' ) ).Contains( af );
@@ -196,7 +196,7 @@ namespace CodeCake
 
         private void ShouldFindTestTxtFileFromDynamicPaths( bool shouldFind )
         {
-            string[] paths = Cake.Environment.GetEnvironmentVariable( "PATH" ).Split( new char[] { Machine.IsUnix() ? ':' : ';' }, StringSplitOptions.RemoveEmptyEntries );
+            string[] paths = Cake.Environment.GetEnvironmentVariable( "PATH" ).Split( new char[] { Cake.Environment.Platform.IsUnix() ? ':' : ';' }, StringSplitOptions.RemoveEmptyEntries );
             bool findTestTxtFileInPath = paths.Select( p => System.IO.Path.Combine( p, "Test.txt" ) ).Any( f => System.IO.File.Exists( f ) );
             if( findTestTxtFileInPath != shouldFind ) throw new Exception( shouldFind ? "Should find Text.txt file." : "Should not find Test.txt file." );
         }

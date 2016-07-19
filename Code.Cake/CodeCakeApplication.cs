@@ -108,8 +108,10 @@ namespace CodeCake
             var logger = new SafeCakeLog( console );
             var engine = new CakeEngine( logger );
 
+            ICakePlatform platform = new CakePlatform();
+            ICakeRuntime runtime = new CakeRuntime();
             IFileSystem fileSystem = new FileSystem();
-            MutableCakeEnvironment environment = new MutableCakeEnvironment();
+            MutableCakeEnvironment environment = new MutableCakeEnvironment( platform, runtime );
             IGlobber globber = new Globber( fileSystem, environment );
             environment.Initialize( globber );
             IProcessRunner processRunner = new ProcessRunner( environment, logger );
@@ -119,7 +121,7 @@ namespace CodeCake
             CakeOptions options = argumentParser.Parse( args );
             Debug.Assert( options != null );
             CakeConfigurationProvider configProvider = new CakeConfigurationProvider( fileSystem, environment );
-            ICakeConfiguration configuration = configProvider.CreateConfiguration( options.Arguments );
+            ICakeConfiguration configuration = configProvider.CreateConfiguration( environment.ApplicationRoot, options.Arguments );
             IToolRepository toolRepo = new ToolRepository( environment );
             IToolResolutionStrategy toolStrategy = new ToolResolutionStrategy( fileSystem, environment, globber, configuration );
             IToolLocator locator = new ToolLocator( environment, toolRepo, toolStrategy );
