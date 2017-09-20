@@ -1,4 +1,4 @@
-﻿using Cake.Arguments;
+using Cake.Arguments;
 using Cake.Core;
 using Cake.Core.Configuration;
 using Cake.Core.Diagnostics;
@@ -72,11 +72,11 @@ namespace CodeCake
         /// </summary>
         class SafeCakeLog : IVerbosityAwareLog
         {
-            CakeBuildLog _logger;
+            Cake.Diagnostics.CakeBuildLog _logger;
 
             public SafeCakeLog( CakeConsole c )
             {
-                _logger = new CakeBuildLog( c );
+                _logger = new Cake.Diagnostics.CakeBuildLog( c );
             }
 
             public Verbosity Verbosity

@@ -1,4 +1,4 @@
-﻿using Cake.Common;
+using Cake.Common;
 using Cake.Common.Solution;
 using Cake.Common.IO;
 using Cake.Common.Tools.MSBuild;
@@ -17,6 +17,8 @@ using Cake.Common.Text;
 using System.Diagnostics;
 using System.Collections.Generic;
 using Cake.Core.IO;
+using Cake.Common.Build.AppVeyor;
+using Cake.Common.Build;
 
 namespace CodeCake
 {
@@ -34,13 +36,12 @@ namespace CodeCake
         public Build()
         {
             var releasesDir = Cake.Directory( "CodeCakeBuilder/Releases" );
-            string configuration = null;
-            SimpleRepositoryInfo gitInfo = null;
+            string configuration = "Debug";
+            SimpleRepositoryInfo gitInfo = Cake.GetSimpleRepositoryInfo();
 
             Task( "Check-Repository" )
                 .Does( () =>
                 {
-                    gitInfo = Cake.GetSimpleRepositoryInfo();
                     if( !gitInfo.IsValid )
                     {
                         if( Cake.IsInteractiveMode()
@@ -48,9 +49,12 @@ namespace CodeCake
                         {
                             Cake.Warning( "GitInfo is not valid, but you choose to continue..." );
                         }
-                        else throw new Exception( "Repository is not ready to be published." );
+                        else if( !Cake.AppVeyor().IsRunningOnAppVeyor ) throw new Exception( "Repository is not ready to be published." );
                     }
-                    configuration = gitInfo.IsValidRelease && gitInfo.PreReleaseName.Length == 0 ? "Release" : "Debug";
+                    configuration = gitInfo.IsValidRelease
+                                    && (gitInfo.PreReleaseName.Length == 0 || gitInfo.PreReleaseName == "rc")
+                                    ? "Release"
+                                    : "Debug";
                 } );
 
             Task( "Clean" )
@@ -71,8 +75,10 @@ namespace CodeCake
             Task( "AutoTests" )
                .Does( () =>
                {
-                   if( System.IO.Directory.Exists( "CodeCakeBuilder/AutoTests" ) ) Cake.DeleteDirectory( "CodeCakeBuilder/AutoTests", true );
-
+                   if (System.IO.Directory.Exists("CodeCakeBuilder/AutoTests"))
+                   {
+                       Cake.DeleteDirectory("CodeCakeBuilder/AutoTests", new DeleteDirectorySettings() { Recursive = true, Force = true } );
+                   }
                    ShouldFindAutoTestFolderFromDynamicPaths( false );
                    ShouldFindTestTxtFileFromDynamicPaths( false );
                    Cake.CreateDirectory( "CodeCakeBuilder/AutoTests/TestDynamic0" );
@@ -81,13 +87,13 @@ namespace CodeCake
                    System.IO.File.WriteAllText( "CodeCakeBuilder/AutoTests/TestDynamic0/Test.txt", "c" );
                    ShouldFindAutoTestFolderFromDynamicPaths( true );
                    ShouldFindTestTxtFileFromDynamicPaths( true );
-                   Cake.DeleteDirectory( "CodeCakeBuilder/AutoTests/TestDynamic0", true );
+                   Cake.DeleteDirectory( "CodeCakeBuilder/AutoTests/TestDynamic0", new DeleteDirectorySettings() { Recursive = true, Force = true });
                    Cake.CreateDirectory( "CodeCakeBuilder/AutoTests/Sub/TestDynamicB" );
                    ShouldFindAutoTestFolderFromDynamicPaths( true );
                    ShouldFindTestTxtFileFromDynamicPaths( false );
                    System.IO.File.WriteAllText( "CodeCakeBuilder/AutoTests/Sub/TestDynamicB/Test.txt", "c" );
                    ShouldFindTestTxtFileFromDynamicPaths( true );
-                   Cake.DeleteDirectory( "CodeCakeBuilder/AutoTests", true );
+                   Cake.DeleteDirectory( "CodeCakeBuilder/AutoTests", new DeleteDirectorySettings() { Recursive = true, Force = true });
                    ShouldFindTestTxtFileFromDynamicPaths( false );
                    ShouldFindAutoTestFolderFromDynamicPaths( false );
                } );
@@ -126,7 +132,7 @@ namespace CodeCake
                         Cake.CreateDirectory( releasesDir );
                         var settings = new NuGetPackSettings()
                         {
-                            Version = gitInfo.NuGetVersion,
+                            Version = gitInfo.SafeNuGetVersion,
                             BasePath = Cake.Environment.WorkingDirectory,
                             OutputDirectory = releasesDir
                         };
@@ -135,51 +141,55 @@ namespace CodeCake
                         {
                             Cake.TransformTextFile( nuspec, "{{", "}}" )
                                     .WithToken( "configuration", configuration )
-                                    .WithToken( "CSemVer", gitInfo.SemVer )
+                                    .WithToken( "CSemVer", gitInfo.SafeSemVersion )
                                     .Save( nuspec );
                             Cake.NuGetPack( nuspec, settings );
                         }
                         Cake.DeleteFiles( releasesDir.Path + "/*.nuspec" );
                     } );
 
-            Task( "Push-NuGet-Packages" )
-                .IsDependentOn( "Create-NuGet-Packages" )
-                .WithCriteria( () => gitInfo.IsValid )
-                .Does( () =>
-                {
-                    IEnumerable<FilePath> nugetPackages = Cake.GetFiles( releasesDir.Path + "/*.nupkg" );
-                    if( Cake.IsInteractiveMode() )
-                    {
-                        var localFeed = Cake.FindDirectoryAbove( "LocalFeed" );
-                        if( localFeed != null )
-                        {
-                            Cake.Information( "LocalFeed directory found: {0}", localFeed );
-                            if( Cake.ReadInteractiveOption( "Do you want to publish to LocalFeed?", 'Y', 'N' ) == 'Y' )
-                            {
-                                Cake.CopyFiles( nugetPackages, localFeed );
-                            }
-                        }
-                    }
-                    if( gitInfo.IsValidRelease )
-                    {
-                        if( gitInfo.PreReleaseName == ""
-                            || gitInfo.PreReleaseName == "prerelease"
-                            || gitInfo.PreReleaseName == "rc" )
-                        {
-                            PushNuGetPackages( "NUGET_API_KEY", "https://www.nuget.org/api/v2/package", nugetPackages );
-                        }
-                        else
-                        {
+            Task("Push-NuGet-Packages")
+                .IsDependentOn("Create-NuGet-Packages")
+                .WithCriteria(() => gitInfo.IsValid)
+                .Does(() =>
+               {
+                   IEnumerable<FilePath> nugetPackages = Cake.GetFiles(releasesDir.Path + "/*.nupkg");
+                   if (Cake.IsInteractiveMode())
+                   {
+                       var localFeed = Cake.FindDirectoryAbove("LocalFeed");
+                       if (localFeed != null)
+                       {
+                           Cake.Information("LocalFeed directory found: {0}", localFeed);
+                           if (Cake.ReadInteractiveOption("Do you want to publish to LocalFeed?", 'Y', 'N') == 'Y')
+                           {
+                               Cake.CopyFiles(nugetPackages, localFeed);
+                           }
+                       }
+                   }
+                   if (gitInfo.IsValidRelease)
+                   {
+                       if (gitInfo.PreReleaseName == ""
+                           || gitInfo.PreReleaseName == "prerelease"
+                           || gitInfo.PreReleaseName == "rc")
+                       {
+                           PushNuGetPackages("NUGET_API_KEY", "https://www.nuget.org/api/v2/package", nugetPackages);
+                       }
+                       else
+                       {
                             // An alpha, beta, delta, epsilon, gamma, kappa goes to invenietis-preview.
-                            PushNuGetPackages( "MYGET_PREVIEW_API_KEY", "https://www.myget.org/F/invenietis-preview/api/v2/package", nugetPackages );
-                        }
-                    }
-                    else
-                    {
-                        Debug.Assert( gitInfo.IsValidCIBuild );
-                        PushNuGetPackages( "MYGET_CI_API_KEY", "https://www.myget.org/F/invenietis-ci/api/v2/package", nugetPackages );
-                    }
-                } );
+                            PushNuGetPackages("MYGET_PREVIEW_API_KEY", "https://www.myget.org/F/invenietis-preview/api/v2/package", nugetPackages);
+                       }
+                   }
+                   else
+                   {
+                       Debug.Assert(gitInfo.IsValidCIBuild);
+                       PushNuGetPackages("MYGET_CI_API_KEY", "https://www.myget.org/F/invenietis-ci/api/v2/package", nugetPackages);
+                   }
+                   if (Cake.AppVeyor().IsRunningOnAppVeyor)
+                   {
+                       Cake.AppVeyor().UpdateBuildVersion(gitInfo.SafeNuGetVersion);
+                   }
+               });
 
             Task( "Default" ).IsDependentOn( "Push-NuGet-Packages" );
 
