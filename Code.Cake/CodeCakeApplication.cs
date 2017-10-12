@@ -158,7 +158,7 @@ namespace CodeCake
                 CodeCakeHost c = (CodeCakeHost)Activator.CreateInstance( choosenBuild.Type );
 
                 var strategy = new DefaultExecutionStrategy( logger );
-                var report = engine.RunTarget( context, strategy, context.Arguments.GetArgument( "target" ) ?? "Default" );
+                var report = engine.RunTargetAsync( context, strategy, context.Arguments.GetArgument( "target" ) ?? "Default" ).GetAwaiter().GetResult();
                 if( report != null && !report.IsEmpty )
                 {
                     var printerReport = new CakeReportPrinter( console );

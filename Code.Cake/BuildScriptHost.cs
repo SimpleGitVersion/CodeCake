@@ -1,7 +1,8 @@
-﻿using Cake.Core;
+using Cake.Core;
 using Cake.Core.Diagnostics;
 using Cake.Core.Scripting;
 using System;
+using System.Threading.Tasks;
 
 namespace CodeCake
 {
@@ -27,7 +28,8 @@ namespace CodeCake
         /// </summary>
         /// <param name="target">The target to run.</param>
         /// <returns>The resulting report.</returns>
-        public override CakeReport RunTarget( string target )
+
+        public override Task<CakeReport> RunTargetAsync( string target )
         {
             throw new NotSupportedException();
         }
