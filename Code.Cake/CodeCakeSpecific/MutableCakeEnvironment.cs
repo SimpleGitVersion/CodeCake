@@ -39,11 +39,13 @@ namespace CodeCake
         /// </summary>
         /// <param name="platform">The platform.</param>
         /// <param name="runtime">The runtime.</param>
-        public MutableCakeEnvironment( ICakePlatform platform, ICakeRuntime runtime )
+        /// <param name="appRoot">App root path</param>
+        public MutableCakeEnvironment( ICakePlatform platform, ICakeRuntime runtime, string appRoot = null )
         {
             _platform = platform;
             _runtime = runtime;
-            _applicationRoot = System.IO.Path.GetDirectoryName( Assembly.GetExecutingAssembly().Location );
+            var rootPath = string.IsNullOrEmpty( appRoot ) ? Assembly.GetExecutingAssembly().Location : appRoot;
+            _applicationRoot = System.IO.Path.GetDirectoryName( rootPath );
 
             WorkingDirectory = new DirectoryPath( Environment.CurrentDirectory );
             var pathEnv = Environment.GetEnvironmentVariable( "PATH" );

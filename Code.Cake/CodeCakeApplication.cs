@@ -101,8 +101,9 @@ namespace CodeCake
         /// Runs the application.
         /// </summary>
         /// <param name="args">Arguments.</param>
+        /// <param name="appRoot">Application root folder</param>
         /// <returns>0 on success.</returns>
-        public int Run( string[] args )
+        public int Run( string[] args, string appRoot = null)
         {
             var console = new CakeConsole();
             var logger = new SafeCakeLog( console );
@@ -111,7 +112,7 @@ namespace CodeCake
             ICakePlatform platform = new CakePlatform();
             ICakeRuntime runtime = new CakeRuntime();
             IFileSystem fileSystem = new FileSystem();
-            MutableCakeEnvironment environment = new MutableCakeEnvironment( platform, runtime );
+            MutableCakeEnvironment environment = new MutableCakeEnvironment( platform, runtime, appRoot );
             IGlobber globber = new Globber( fileSystem, environment );
             environment.Initialize( globber );
             IProcessRunner processRunner = new ProcessRunner( environment, logger );
