@@ -8,7 +8,7 @@ This project is not affiliated with [Cake](https://github.com/cake-build/cake), 
 Using Code.Cake
 ===============
 
-1. Create or open a C# project
+1. Create or open a NET framework C# project
 2. Install the [Code.Cake NuGet package](https://www.nuget.org/packages/Code.Cake/): `Install-Package Code.Cake`
 3. Create a build host class:
 
@@ -28,7 +28,7 @@ public class Build : CodeCakeHost
 {
     public Build()
     {
-        // The static ICakeContext Cake variable is always available
+        // The Cake property has all Cake properties, tools and extension methods on it
         Cake.Log.Verbosity = Verbosity.Diagnostic;
 
         var binDir = Cake.Directory("bin");
