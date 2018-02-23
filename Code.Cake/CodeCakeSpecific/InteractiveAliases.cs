@@ -100,6 +100,7 @@ namespace CodeCake
 
             if( argumentName != null && context.Arguments.HasArgument( argumentName ) )
             {
+                Console.WriteLine();
                 string arg = context.Arguments.GetArgument( argumentName );
                 if( arg.Length != 1
                     || !options.Contains( char.ToUpperInvariant( arg[0] ) ) )
@@ -114,9 +115,10 @@ namespace CodeCake
             }
             if( IsAutoInteractiveMode( context ) )
             {
+                Console.WriteLine();
                 if( argumentName != null )
                 {
-                    context.Log.Information( $"Mode -autointeraction (and no command line -{argumentName}=X argument provided): automatically answer with the first choice: {options[0]}." );
+                    context.Log.Information( $"Mode -autointeraction (and no command line -{argumentName}=\"value\" argument provided): automatically answer with the first choice: {options[0]}." );
                 }
                 else
                 {
@@ -129,7 +131,7 @@ namespace CodeCake
                 char c = char.ToUpperInvariant( Console.ReadKey().KeyChar );
                 Console.WriteLine();
                 if( options.Contains( c ) ) return c;
-                Console.Write( "Invalid choice '{0}'. Must be one of {1}: ", c, choices );
+                Console.Write( $"Invalid choice '{c}'. Must be one of {choices}: " );
             }
         }
 
@@ -151,11 +153,12 @@ namespace CodeCake
                 Console.Write( $"Environment Variable '{variable}' not found. Enter its value: " );
                 if( IsAutoInteractiveMode( context ) )
                 {
+                    Console.WriteLine();
                     string fromArgName = "ENV:" + variable;
                     string fromArg = context.Arguments.HasArgument( fromArgName ) ? context.Arguments.GetArgument( fromArgName ) : null;
                     if( fromArg != null )
                     {
-                        context.Log.Information( $"Mode -autointeraction: argument provided): automatically answer with -{fromArgName}={fromArg}." );
+                        context.Log.Information( $"Mode -autointeraction: automatically answer with -{fromArgName}={fromArg}." );
                         v = fromArg;
                     }
                     else
