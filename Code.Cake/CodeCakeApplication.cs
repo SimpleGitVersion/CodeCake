@@ -43,8 +43,8 @@ namespace CodeCake
         /// </param>
         /// <param name="solutionDirectory">
         /// Solution directory: will become the <see cref="ICakeEnvironment.WorkingDirectory"/>.
-        /// When null, if the <see cref="Assembly.GetEntryAssembly()"/> is not null we consider it running in "Solution/Builder/bin/[Configuration}" folder:
-        /// we compute the solution directory by removing 3 sub folders.
+        /// When null, we consider the <see cref="AppContext.BaseDirectory"/> to be running in "Solution/Builder/bin/[Configuration}/[targetFramework]" folder:
+        /// we compute the solution directory by looking for the /bin/ folder and escalating 2 levels.
         /// </param>
         public CodeCakeApplication( IEnumerable<Assembly> codeContainers = null, string solutionDirectory = null )
         {
@@ -59,8 +59,14 @@ namespace CodeCake
             if( solutionDirectory == null && executingAssembly != null )
             {
                 solutionDirectory = new Uri( Assembly.GetEntryAssembly().CodeBase ).LocalPath;
-                solutionDirectory = System.IO.Path.GetDirectoryName( solutionDirectory );
-                solutionDirectory = System.IO.Path.GetDirectoryName( solutionDirectory );
+                while( System.IO.Path.GetFileName( solutionDirectory ) != "bin" )
+                {
+                    solutionDirectory = System.IO.Path.GetDirectoryName( solutionDirectory );
+                    if( string.IsNullOrEmpty( solutionDirectory ) )
+                    {
+                        throw new ArgumentException( $"Unable to find /bin/ folder in AppContext.BaseDirectory = {AppContext.BaseDirectory}. Please provide a non null solution directory.", nameof(solutionDirectory) );
+                    }
+                }
                 solutionDirectory = System.IO.Path.GetDirectoryName( solutionDirectory );
                 solutionDirectory = System.IO.Path.GetDirectoryName( solutionDirectory );
             }
