@@ -100,31 +100,35 @@ namespace CodeCake
 
             if( argumentName != null && context.Arguments.HasArgument( argumentName ) )
             {
-                Console.WriteLine();
                 string arg = context.Arguments.GetArgument( argumentName );
                 if( arg.Length != 1
                     || !options.Contains( char.ToUpperInvariant( arg[0] ) ) )
                 {
+                    Console.WriteLine();
                     context.Log.Error( $"Provided command line argument -{argumentName}={arg} is invalid. It must be a unique character in: {choices}" );
+                    // Fallback to interactive mode below.
                 }
                 else
                 {
+                    var c = char.ToUpperInvariant( arg[0] );
+                    Console.WriteLine( c );
                     context.Log.Information( $"Answered by command line argument -{argumentName}={arg}." );
-                    return char.ToUpperInvariant( arg[0] );
+                    return c;
                 }
             }
             if( IsAutoInteractiveMode( context ) )
             {
-                Console.WriteLine();
+                char c = options[0];
+                Console.WriteLine( c );
                 if( argumentName != null )
                 {
-                    context.Log.Information( $"Mode -autointeraction (and no command line -{argumentName}=\"value\" argument provided): automatically answer with the first choice: {options[0]}." );
+                    context.Log.Information( $"Mode -autointeraction (and no command line -{argumentName}=\"value\" argument found): automatically answer with the first choice: {c}." );
                 }
                 else
                 {
-                    context.Log.Information( $"Mode -autointeraction: automatically answer with the first choice: {options[0]}." );
+                    context.Log.Information( $"Mode -autointeraction: automatically answer with the first choice: {c}." );
                 }
-                return options[0];
+                return c;
             }
             for(; ; )
             {
@@ -153,18 +157,17 @@ namespace CodeCake
                 Console.Write( $"Environment Variable '{variable}' not found. Enter its value: " );
                 if( IsAutoInteractiveMode( context ) )
                 {
-                    Console.WriteLine();
                     string fromArgName = "ENV:" + variable;
                     string fromArg = context.Arguments.HasArgument( fromArgName ) ? context.Arguments.GetArgument( fromArgName ) : null;
                     if( fromArg != null )
                     {
-                        context.Log.Information( $"Mode -autointeraction: automatically answer with -{fromArgName}={fromArg}." );
-                        v = fromArg;
+                        Console.WriteLine( v = fromArg );
+                        context.Log.Information( $"Mode -autointeraction: automatically answer with command line -{fromArgName}={fromArg} argument." );
                     }
                     else
                     {
-                        context.Log.Information( $"Mode -autointeraction (and no command line -{fromArgName}=XXX argument provided): automatically answer with an empty string." );
-                        v = String.Empty;
+                        Console.WriteLine( v = String.Empty );
+                        context.Log.Information( $"Mode -autointeraction (and no command line -{fromArgName}=XXX argument): automatically answer with an empty string." );
                     }
                 }
                 else v = Console.ReadLine();

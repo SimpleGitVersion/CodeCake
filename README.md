@@ -10,7 +10,7 @@ Using Code.Cake
 
 1. Create or open a NET framework C# project
 2. Install the [Code.Cake NuGet package](https://www.nuget.org/packages/Code.Cake/): `Install-Package Code.Cake`
-3. Create a build host class:
+3. Create a build class:
 
 ```csharp
 // Cake extension methods and utilities are split into many different namespaces, which all need to be specified.
@@ -19,11 +19,13 @@ using Cake.Common.Build;
 using Cake.Common.Diagnostics;
 using Cake.Common.IO;
 using Cake.Common.Tools.NuGet;
-using Cake.Common.Tools.MSBuild;
+using Cake.Common.Tools.DotNetCore;
+using Cake.Common.Tools.DotNetCore.Build;
 
 // AddPathAttribute will add directories to the process' PATH environment variable.
 // Use it if you have external executables like nuget.exe, octo.exe, etc.
 [AddPath("packages/**/tools*")]
+[AddPath("%UserProfile%/.nuget/packages/**/tools*")]
 public class Build : CodeCakeHost
 {
     public Build()
@@ -31,14 +33,15 @@ public class Build : CodeCakeHost
         // The Cake property has all Cake properties, tools and extension methods on it
         Cake.Log.Verbosity = Verbosity.Diagnostic;
 
-        var binDir = Cake.Directory("bin");
-        var solutionFile = Cake.File("MySolution.sln");
+        var configuration = "Debug";
+        var solutionFileName = "MySolution.sln";
 
         // Task example
         Task("Clean")
             .Does(() =>
             {
-                Cake.CleanDirectories(binDir);
+                Cake.CleanDirectories( "**/bin/" + configuration, d => !d.Path.Segments.Contains( "CodeCakeBuilder" ) );
+                Cake.CleanDirectories( "**/obj/" + configuration, d => !d.Path.Segments.Contains( "CodeCakeBuilder" ) );
             });
 
         // Tasks can depend on other tasks, which will be executed before
@@ -46,8 +49,17 @@ public class Build : CodeCakeHost
             .IsDependentOn("Clean");
             .Does(() =>
             {
-                Cake.NuGetRestore(solutionFile);
-                Cake.MSBuild(solutionFile);
+                // CreateTemporarySolutionFile is a feature of Code.Cake.
+                using( var tempSln = Cake.CreateTemporarySolutionFile( solutionFileName ) )
+                {
+                    tempSln.ExcludeProjectsFromBuild( "CodeCakeBuilder" );
+                    Cake.DotNetCoreBuild( tempSln.FullPath.FullPath, new DotNetCoreBuildSettings()
+                    {
+                        Configuration = configuration,
+                        Verbosity = DotNetCoreVerbosity.Minimal,
+                        ArgumentCustomization = args => args.Append( "/p:GenerateDocumentation=true" )
+                    } );
+                }
             });
 
         // If no task is specified when you execute Code.Cake, the "Default" task will be executed
@@ -57,13 +69,116 @@ public class Build : CodeCakeHost
 }
 ```
 
-3. In your code, call `Code.Cake`;
+3. In your code, call `Code.Cake`. Following Program.cs is the standard one we use: 
 
 ```csharp
-string[] cakeArgs;
-var app = new CodeCakeApplication();
-app.Run(cakeArgs);
+using System;
+using System.Linq;
+
+namespace CodeCake
+{
+    class Program
+    {
+        /// <summary>
+        /// CodeCakeBuilder entry point. This is a default, simple, implementation that can 
+        /// be extended as needed.
+        /// </summary>
+        /// <param name="args">The command line arguments.</param>
+        /// <returns>An error code (typically -1), 0 on success.</returns>
+        static int Main( string[] args )
+        {
+            var app = new CodeCakeApplication();
+            int result = app.Run( args );
+            bool interactive = !args.Contains( '-' + InteractiveAliases.NoInteractionArgument, StringComparer.OrdinalIgnoreCase );
+            if( interactive )
+            {
+                Console.WriteLine();
+                Console.WriteLine( "Hit any key to exit. (Use -{0} parameter to exit immediately)", InteractiveAliases.NoInteractionArgument );
+                Console.ReadKey();
+            }
+            return result;
+
+        }
+    }
+}
 ```
+## More information
+You can have multiple Build class in a CodeCakeBuilder.exe.
+
+```csharp
+using Cake.Common.Diagnostics;
+using Cake.Core.Diagnostics;
+
+namespace CodeCake
+{
+    public class MySecondBuild : CodeCakeHost
+    {
+        public MySecondBuild()
+        {
+            Cake.Information( "I'm here!" );
+        }
+    }
+}
+```
+
+Choose the one you want to run on the command line: `CodeCakeBuilder.exe MySecondBuild`
+
+By default CodeCake runs in interactive mode. This enables yor script to ask you quesions like:
+
+```csharp
+    Task( "Run-IntegrationTests" )
+        .IsDependentOn( "Compile-IntegrationTests" )
+        .WithCriteria( () => !Cake.IsInteractiveMode()
+                            || Cake.ReadInteractiveOption( "Run integration tests?", 'Y', 'N' ) == 'Y' )
+        .Does( () =>
+        {
+            //...
+        }
+```
+
+See the [InteractiveAliases source code](https://github.com/SimpleGitVersion/CodeCake/blob/master/Code.Cake/CodeCakeSpecific/InteractiveAliases.cs)
+for more information about this CodeCake specific extension.
+
+On CI server, or when no interaction are required, just launch: `CodeCakeBuilder.exe -nointeraction`
+
+An intermediate mode is available: `CodeCakeBuilder.exe -autointeraction`. In this mode, command line arguments
+can drive the behavior of the execution. Given the sample script below:
+
+```csharp
+    IEnumerable<FilePath> nugetPackages = Cake.GetFiles( releasesDir.Path + "/*.nupkg" );
+    if( Cake.IsInteractiveMode() )
+    {
+        var localFeed = Cake.FindDirectoryAbove( "LocalFeed" );
+        if( localFeed != null )
+        {
+            Cake.Information( "LocalFeed directory found: {0}", localFeed );
+            if( Cake.ReadInteractiveOption( "PushLocal", "Do you want to publish to LocalFeed?", 'Y', 'N' ) == 'Y' )
+            {
+                Cake.CopyFiles( nugetPackages, localFeed );
+            }
+        }
+    }
+    var apiKey = Cake.InteractiveEnvironmentVariable( "NUGET_API_KEY" );
+    if( string.IsNullOrEmpty( apiKey ) )
+    {
+        Cake.Information( "Could not resolve NUGET_API_KEY. Push to https://www.nuget.org/api/v2/package is skipped." );
+    }
+    else
+    {
+        var settings = new NuGetPushSettings
+        {
+            Source = "https://www.nuget.org/api/v2/package",
+            ApiKey = apiKey
+        };
+        foreach( var nupkg in nugetPackages ) Cake.NuGetPush( nupkg, settings );
+    }
+```
+
+`CodeCakeBuilder.exe -autointeraction -PushLocal=N -ENV:NUGET_API_KEY="xxx"`
+
+Will not push to the local feed but will try to push to the nuget feed.
+With `-autointeraxction`, when no command line argument can be fonud for `ReadInteractiveOption`, the first choice is assumed (for
+the LocalPush above, it would be Y[es]).
 
 ## Build instructions
 
@@ -77,8 +192,6 @@ app.Run(cakeArgs);
 | ---------------- | ------ |
 | **NuGet stable** | [![NuGet](https://img.shields.io/nuget/v/Code.Cake.svg)](https://www.nuget.org/packages/Code.Cake) |
 | NuGet prerelease | [![NuGet Pre Release](https://img.shields.io/nuget/vpre/Code.Cake.svg)](https://www.nuget.org/packages/Code.Cake) |
-| MyGet preview    | [![MyGet Pre Release](https://img.shields.io/myget/invenietis-preview/vpre/Code.Cake.svg)](https://www.myget.org/feed/invenietis-preview/package/nuget/Code.Cake)  |
-| MyGet CI         | [![MyGet Pre Release](https://img.shields.io/myget/invenietis-ci/vpre/Code.Cake.svg)](https://www.myget.org/feed/invenietis-ci/package/nuget/Code.Cake) |
 
 ## Build status
 
