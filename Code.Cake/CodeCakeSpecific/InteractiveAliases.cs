@@ -19,6 +19,11 @@ namespace CodeCake
         public static readonly string NoInteractionArgument = "nointeraction";
 
         /// <summary>
+        /// The "autointeraction" string with no dash before.
+        /// </summary>
+        public static readonly string AutoInteractionArgument = "autointeraction";
+
+        /// <summary>
         /// Gets whether the context supports interaction with the user (depends on -nointeraction argument).
         /// </summary>
         /// <param name="context">The context.</param>
@@ -28,6 +33,19 @@ namespace CodeCake
         public static bool IsInteractiveMode( this ICakeContext context )
         {
             return !context.HasArgument( NoInteractionArgument );
+        }
+
+        /// <summary>
+        /// Gets whether the context supports interaction with the user (this can be true only if <see cref="IsInteractiveMode(ICakeContext)"/>
+        /// is true) in automatic mode.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <returns>True if interactive mode is available, false otherwise.</returns>
+        [CakeAliasCategory( "Interactive mode" )]
+        [CakeMethodAlias]
+        public static bool IsAutoInteractiveMode( this ICakeContext context )
+        {
+            return IsInteractiveMode( context ) && context.HasArgument( AutoInteractionArgument );
         }
 
         /// <summary>
@@ -76,24 +94,35 @@ namespace CodeCake
             if( options.Any( c => char.IsLower( c ) ) ) throw new ArgumentException( "Options must be uppercase letter." );
 
             string choices = String.Join( "/", options );
+            if( string.IsNullOrWhiteSpace( message ) )
+                Console.Write( "{0}: ", choices );
+            else Console.Write( "{0} ({1}): ", message, choices );
+
             if( argumentName != null && context.Arguments.HasArgument( argumentName ) )
             {
                 string arg = context.Arguments.GetArgument( argumentName );
                 if( arg.Length != 1
                     || !options.Contains( char.ToUpperInvariant( arg[0] ) ) )
                 {
-                    context.Log.Error( $"Provided command line argument ({arg}) is invalid. It must be a unique character in: {choices}" );
+                    context.Log.Error( $"Provided command line argument -{argumentName}={arg} is invalid. It must be a unique character in: {choices}" );
                 }
                 else
                 {
+                    context.Log.Information( $"Answered by command line argument -{argumentName}={arg}." );
                     return char.ToUpperInvariant( arg[0] );
                 }
             }
-            if( message != null )
+            if( IsAutoInteractiveMode( context ) )
             {
-                if( string.IsNullOrWhiteSpace( message ) )
-                    Console.Write( "{0}: ", choices );
-                else Console.Write( "{0} ({1}): ", message, choices );
+                if( argumentName != null )
+                {
+                    context.Log.Information( $"Mode -autointeraction (and no command line -{argumentName}=X argument provided): automatically answer with the first choice: {options[0]}." );
+                }
+                else
+                {
+                    context.Log.Information( $"Mode -autointeraction: automatically answer with the first choice: {options[0]}." );
+                }
+                return options[0];
             }
             for(; ; )
             {
@@ -119,8 +148,23 @@ namespace CodeCake
             string v = context.EnvironmentVariable( variable );
             if( v == null && IsInteractiveMode( context ) )
             {
-                Console.Write( "Environment Variable '{0}' not found. Enter its value: ", variable );
-                v = Console.ReadLine();
+                Console.Write( $"Environment Variable '{variable}' not found. Enter its value: " );
+                if( IsAutoInteractiveMode( context ) )
+                {
+                    string fromArgName = "ENV:" + variable;
+                    string fromArg = context.Arguments.HasArgument( fromArgName ) ? context.Arguments.GetArgument( fromArgName ) : null;
+                    if( fromArg != null )
+                    {
+                        context.Log.Information( $"Mode -autointeraction: argument provided): automatically answer with -{fromArgName}={fromArg}." );
+                        v = fromArg;
+                    }
+                    else
+                    {
+                        context.Log.Information( $"Mode -autointeraction (and no command line -{fromArgName}=XXX argument provided): automatically answer with an empty string." );
+                        v = String.Empty;
+                    }
+                }
+                else v = Console.ReadLine();
                 if( setCache ) Environment.SetEnvironmentVariable( variable, v );
             }
             return v;
