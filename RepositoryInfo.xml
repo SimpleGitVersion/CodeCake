@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RepositoryInfo xmlns="http://csemver.org/schemas/2015">
   <Branches>
-    <Branch Name="master" VersionName="explore" CIVersionMode="LastReleaseBased" />
+    <Branch Name="master" CIVersionMode="None" />
+    <Branch Name="develop" VersionName="develop" CIVersionMode="LastReleaseBased" />
   </Branches>
   <StartingVersionForCSemVer>v0.6.0-rc</StartingVersionForCSemVer>
   <!-- <Debug IgnoreDirtyWorkingFolder="true"/> -->

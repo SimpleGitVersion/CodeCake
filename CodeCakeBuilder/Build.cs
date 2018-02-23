@@ -19,6 +19,8 @@ using System.Collections.Generic;
 using Cake.Core.IO;
 using Cake.Common.Build.AppVeyor;
 using Cake.Common.Build;
+using Cake.Common.Tools.DotNetCore;
+using Cake.Common.Tools.DotNetCore.Build;
 
 namespace CodeCake
 {
@@ -75,9 +77,9 @@ namespace CodeCake
             Task( "AutoTests" )
                .Does( () =>
                {
-                   if (System.IO.Directory.Exists("CodeCakeBuilder/AutoTests"))
+                   if( System.IO.Directory.Exists( "CodeCakeBuilder/AutoTests" ) )
                    {
-                       Cake.DeleteDirectory("CodeCakeBuilder/AutoTests", new DeleteDirectorySettings() { Recursive = true, Force = true } );
+                       Cake.DeleteDirectory( "CodeCakeBuilder/AutoTests", new DeleteDirectorySettings() { Recursive = true, Force = true } );
                    }
                    ShouldFindAutoTestFolderFromDynamicPaths( false );
                    ShouldFindTestTxtFileFromDynamicPaths( false );
@@ -87,13 +89,13 @@ namespace CodeCake
                    System.IO.File.WriteAllText( "CodeCakeBuilder/AutoTests/TestDynamic0/Test.txt", "c" );
                    ShouldFindAutoTestFolderFromDynamicPaths( true );
                    ShouldFindTestTxtFileFromDynamicPaths( true );
-                   Cake.DeleteDirectory( "CodeCakeBuilder/AutoTests/TestDynamic0", new DeleteDirectorySettings() { Recursive = true, Force = true });
+                   Cake.DeleteDirectory( "CodeCakeBuilder/AutoTests/TestDynamic0", new DeleteDirectorySettings() { Recursive = true, Force = true } );
                    Cake.CreateDirectory( "CodeCakeBuilder/AutoTests/Sub/TestDynamicB" );
                    ShouldFindAutoTestFolderFromDynamicPaths( true );
                    ShouldFindTestTxtFileFromDynamicPaths( false );
                    System.IO.File.WriteAllText( "CodeCakeBuilder/AutoTests/Sub/TestDynamicB/Test.txt", "c" );
                    ShouldFindTestTxtFileFromDynamicPaths( true );
-                   Cake.DeleteDirectory( "CodeCakeBuilder/AutoTests", new DeleteDirectorySettings() { Recursive = true, Force = true });
+                   Cake.DeleteDirectory( "CodeCakeBuilder/AutoTests", new DeleteDirectorySettings() { Recursive = true, Force = true } );
                    ShouldFindTestTxtFileFromDynamicPaths( false );
                    ShouldFindAutoTestFolderFromDynamicPaths( false );
                } );
@@ -106,9 +108,11 @@ namespace CodeCake
                 .Does( () =>
                 {
                     Cake.Information( "Building CodeCake.sln with '{0}' configuration (excluding this builder application).", configuration );
+                    // CreateTemporarySolutionFile is a feature of Code.Cake.
                     using( var tempSln = Cake.CreateTemporarySolutionFile( "CodeCake.sln" ) )
                     {
                         tempSln.ExcludeProjectsFromBuild( "CodeCakeBuilder" );
+
                         Cake.MSBuild( tempSln.FullPath, new MSBuildSettings()
                                 .SetConfiguration( configuration )
                                 .SetVerbosity( Verbosity.Minimal )
@@ -119,8 +123,15 @@ namespace CodeCake
                                 //   <DocumentationFile>bin\$(Configuration)\$(AssemblyName).xml</DocumentationFile>
                                 // </PropertyGroup>
                                 //
-                                .WithProperty( "GenerateDocumentation", new[] { "true" } )
-                            );
+                                .WithProperty( "GenerateDocumentation", new[] { "true" } ) );
+
+                        //Cake.DotNetCoreBuild( tempSln.FullPath.FullPath,
+                        //    new DotNetCoreBuildSettings().AddVersionArguments( gitInfo, c =>
+                        //{
+                        //    c.Configuration = configuration;
+                        //    c.Verbosity = DotNetCoreVerbosity.Minimal;
+                        //    c.ArgumentCustomization = args => args.Append( "/p:GenerateDocumentation=true" );
+                        //} ) );
                     }
                 } );
 
@@ -148,48 +159,48 @@ namespace CodeCake
                         Cake.DeleteFiles( releasesDir.Path + "/*.nuspec" );
                     } );
 
-            Task("Push-NuGet-Packages")
-                .IsDependentOn("Create-NuGet-Packages")
-                .WithCriteria(() => gitInfo.IsValid)
-                .Does(() =>
-               {
-                   IEnumerable<FilePath> nugetPackages = Cake.GetFiles(releasesDir.Path + "/*.nupkg");
-                   if (Cake.IsInteractiveMode())
-                   {
-                       var localFeed = Cake.FindDirectoryAbove("LocalFeed");
-                       if (localFeed != null)
-                       {
-                           Cake.Information("LocalFeed directory found: {0}", localFeed);
-                           if (Cake.ReadInteractiveOption( "LocalFeed", "Do you want to publish to LocalFeed?", 'Y', 'N') == 'Y')
-                           {
-                               Cake.CopyFiles(nugetPackages, localFeed);
-                           }
-                       }
-                   }
-                   if (gitInfo.IsValidRelease)
-                   {
-                       if (gitInfo.PreReleaseName == ""
-                           || gitInfo.PreReleaseName == "prerelease"
-                           || gitInfo.PreReleaseName == "rc")
-                       {
-                           PushNuGetPackages("NUGET_API_KEY", "https://www.nuget.org/api/v2/package", nugetPackages);
-                       }
-                       else
-                       {
-                            // An alpha, beta, delta, epsilon, gamma, kappa goes to invenietis-preview.
-                            PushNuGetPackages("MYGET_PREVIEW_API_KEY", "https://www.myget.org/F/invenietis-preview/api/v2/package", nugetPackages);
-                       }
-                   }
-                   else
-                   {
-                       Debug.Assert(gitInfo.IsValidCIBuild);
-                       PushNuGetPackages("MYGET_CI_API_KEY", "https://www.myget.org/F/invenietis-ci/api/v2/package", nugetPackages);
-                   }
-                   if (Cake.AppVeyor().IsRunningOnAppVeyor)
-                   {
-                       Cake.AppVeyor().UpdateBuildVersion(gitInfo.SafeNuGetVersion);
-                   }
-               });
+            Task( "Push-NuGet-Packages" )
+                .IsDependentOn( "Create-NuGet-Packages" )
+                .WithCriteria( () => gitInfo.IsValid )
+                .Does( () =>
+                {
+                    IEnumerable<FilePath> nugetPackages = Cake.GetFiles( releasesDir.Path + "/*.nupkg" );
+                    if( Cake.IsInteractiveMode() )
+                    {
+                        var localFeed = Cake.FindDirectoryAbove( "LocalFeed" );
+                        if( localFeed != null )
+                        {
+                            Cake.Information( "LocalFeed directory found: {0}", localFeed );
+                            if( Cake.ReadInteractiveOption( "LocalFeed", "Do you want to publish to LocalFeed?", 'Y', 'N' ) == 'Y' )
+                            {
+                                Cake.CopyFiles( nugetPackages, localFeed );
+                            }
+                        }
+                    }
+                    if( gitInfo.IsValidRelease )
+                    {
+                        if( gitInfo.PreReleaseName == ""
+                            || gitInfo.PreReleaseName == "prerelease"
+                            || gitInfo.PreReleaseName == "rc" )
+                        {
+                            PushNuGetPackages( "NUGET_API_KEY", "https://www.nuget.org/api/v2/package", nugetPackages );
+                        }
+                        else
+                        {
+                           // An alpha, beta, delta, epsilon, gamma, kappa goes to invenietis-preview.
+                           PushNuGetPackages( "MYGET_PREVIEW_API_KEY", "https://www.myget.org/F/invenietis-preview/api/v2/package", nugetPackages );
+                        }
+                    }
+                    else
+                    {
+                        Debug.Assert( gitInfo.IsValidCIBuild );
+                        PushNuGetPackages( "MYGET_CI_API_KEY", "https://www.myget.org/F/invenietis-ci/api/v2/package", nugetPackages );
+                    }
+                    if( Cake.AppVeyor().IsRunningOnAppVeyor )
+                    {
+                        Cake.AppVeyor().UpdateBuildVersion( gitInfo.SafeNuGetVersion );
+                    }
+                } );
 
             Task( "Default" ).IsDependentOn( "Push-NuGet-Packages" );
 
