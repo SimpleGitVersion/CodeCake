@@ -1,18 +1,17 @@
-# Basic appveyor configuration: CodeCakeBuilder application does all the job.
 version: build{build}
+image: Visual Studio 2017
+clone_folder: C:\CK-World\SimpleGitVersion\CodeCake
 branches:
   only:
-  - master
-  - develop
+    - master
+    - develop
 environment:
-  NUGET_API_KEY:
-    secure: Cx0q/gQZQpP3eDf6H9lzIDpYYki+sGCpruxgDcFUJRoYdpH7l5aDh7afloH3uNLD
   MYGET_PREVIEW_API_KEY:
     secure: CfEqNYjhrGX9DyalZ4jcadzJ/x8q25GulMCbZQDRRs+XetfHn2AEP79OJXE1wSJ8
   MYGET_CI_API_KEY:
-    secure: jhHWme6+MulQTwEN1kkwygP2kEf47L8SyndWGQWEvPn6dRwZh9ZQXXGz4e1Xk7q0
-install:
-- ps: CodeCakeBuilder\Bootstrap.ps1
+    secure: z3ZFnSM3FPCaJYkLhqjZmFTCw1Wf1hmRznQ0/UfxY/5haxctmymvFhh+PTz+/eHw
+  MYGET_RELEASE_API_KEY:
+    secure: BmENGV1y8uv5cLhMhwpoDLwQiLJh4C66c53+FW8FuuVfu5Lf4Ac6NvSuqO/1MbPm
 build_script:
-- CodeCakeBuilder\bin\Release\CodeCakeBuilder.exe -nointeraction
+  - dotnet run --project CodeCakeBuilder -nointeraction
 test: off
