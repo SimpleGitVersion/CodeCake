@@ -73,7 +73,6 @@ public class Build : CodeCakeHost
 
 ```csharp
 using System;
-using System.Linq;
 
 namespace CodeCake
 {
@@ -84,25 +83,25 @@ namespace CodeCake
         /// be extended as needed.
         /// </summary>
         /// <param name="args">The command line arguments.</param>
-        /// <returns>An error code (typically -1), 0 on success.</returns>
+        /// <returns>An error code (typically negative), 0 on success.</returns>
         static int Main( string[] args )
         {
             var app = new CodeCakeApplication();
-            int result = app.Run( args );
-            bool interactive = !args.Contains( '-' + InteractiveAliases.NoInteractionArgument, StringComparer.OrdinalIgnoreCase );
-            if( interactive )
+            RunResult result = app.Run( args );
+            if( result.IsInteractiveMode )
             {
                 Console.WriteLine();
-                Console.WriteLine( "Hit any key to exit. (Use -{0} parameter to exit immediately)", InteractiveAliases.NoInteractionArgument );
+                Console.WriteLine( $"Hit any key to exit." );
+                Console.WriteLine( $"Use -{InteractiveAliases.NoInteractionArgument} or -{InteractiveAliases.AutoInteractionArgument} parameter to exit immediately." );
                 Console.ReadKey();
             }
-            return result;
+            return result.ReturnCode;
 
         }
     }
 }
 ```
-## More information
+## More information: Multiple Build scripts and Interactive mode
 You can have multiple Build class in a CodeCakeBuilder.exe.
 
 ```csharp
@@ -139,7 +138,7 @@ By default CodeCake runs in interactive mode. This enables yor script to ask you
 See the [InteractiveAliases source code](https://github.com/SimpleGitVersion/CodeCake/blob/master/Code.Cake/CodeCakeSpecific/InteractiveAliases.cs)
 for more information about this CodeCake specific extension.
 
-On CI server, or when no interaction are required, just launch: `CodeCakeBuilder.exe -nointeraction`
+On CI server, or when no interaction are required, compile CodeCakBuilder project and launch: `CodeCakeBuilder.exe -nointeraction`, or even simpler from the solution directory just call `dotnet run --project CodeCakeBuilder -nointeraction`
 
 An intermediate mode is available: `CodeCakeBuilder.exe -autointeraction`. In this mode, command line arguments
 can drive the behavior of the execution. Given the sample script below:
@@ -177,14 +176,13 @@ can drive the behavior of the execution. Given the sample script below:
 `CodeCakeBuilder.exe -autointeraction -PushLocal=N -ENV:NUGET_API_KEY="xxx"`
 
 Will not push to the local feed but will try to push to the nuget feed.
-With `-autointeraxction`, when no command line argument can be fonud for `ReadInteractiveOption`, the first choice is assumed (for
-the LocalPush above, it would be Y[es]).
+With `-autointeraction`, when no command line argument can be found for the `ReadInteractiveOption`, the **first choice is assumed** (for
+the LocalPush above, it would be **Y**[es]).
 
 ## Build instructions
 
 1. Clone the repository
-2. Using Powershell, execute `CodeCakeBuilder/Bootstrap.ps1`
-3. Execute `CodeCakeBuilder/bin/Release/CodeCakeBuilder.exe`
+2. Execute `dotnet run --project CodeCakeBuilder -nointeraction`
 
 ## NuGet packages
 

@@ -1,5 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project ToolsVersion="14.0" DefaultTargets="Build">
   <Import Project="..\packages\SimpleGitVersion.Core.0.30.0\build\SimpleGitVersion.Core.props" Condition="Exists('..\packages\SimpleGitVersion.Core.0.30.0\build\SimpleGitVersion.Core.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -36,11 +35,11 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Cake.Common, Version=0.25.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Cake.Common.0.25.0\lib\net46\Cake.Common.dll</HintPath>
+    <Reference Include="Cake.Common, Version=0.26.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Cake.Common.0.26.1\lib\net46\Cake.Common.dll</HintPath>
     </Reference>
-    <Reference Include="Cake.Core, Version=0.25.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Cake.Core.0.25.0\lib\net46\Cake.Core.dll</HintPath>
+    <Reference Include="Cake.Core, Version=0.26.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Cake.Core.0.26.1\lib\net46\Cake.Core.dll</HintPath>
     </Reference>
     <Reference Include="CSemVer, Version=1.1.0.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
       <HintPath>..\packages\CSemVer.1.1.0\lib\net461\CSemVer.dll</HintPath>

@@ -107,7 +107,7 @@ namespace CodeCake
                 .IsDependentOn( "AutoTests" )
                 .Does( () =>
                 {
-                    Cake.Information( "Building CodeCake.sln with '{0}' configuration (excluding this builder application).", configuration );
+                    Cake.Information( $"Building CodeCake.sln with '{configuration}' configuration (excluding this builder application)." );
                     // CreateTemporarySolutionFile is a feature of Code.Cake.
                     using( var tempSln = Cake.CreateTemporarySolutionFile( "CodeCake.sln" ) )
                     {
