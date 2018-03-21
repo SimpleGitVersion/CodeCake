@@ -10,15 +10,15 @@ namespace CodeCake
         /// </summary>
         /// <param name="args">The command line arguments.</param>
         /// <returns>An error code (typically negative), 0 on success.</returns>
-        static int Main( string[] args )
+        static int Main(string[] args)
         {
             var app = new CodeCakeApplication();
-            RunResult result = app.Run( args );
-            if( result.IsInteractiveMode )
+            RunResult result = app.Run(args);
+            if (result.IsInteractiveMode)
             {
                 Console.WriteLine();
-                Console.WriteLine( $"Hit any key to exit." );
-                Console.WriteLine( $"Use -{InteractiveAliases.NoInteractionArgument} or -{InteractiveAliases.AutoInteractionArgument} parameter to exit immediately." );
+                Console.WriteLine($"Hit any key to exit.");
+                Console.WriteLine($"Use -{InteractiveAliases.NoInteractionArgument} or -{InteractiveAliases.AutoInteractionArgument} parameter to exit immediately.");
                 Console.ReadKey();
             }
             return result.ReturnCode;

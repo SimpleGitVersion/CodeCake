@@ -1,15 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
+  <Import Project="..\Common\Shared.props"/>
+  
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
     <Description>CodeCake offers code based support to Cake (see http://cakebuild.net/ site).</Description>
-    <Authors>Olivier Spinelli</Authors>
-    <Company>Signature-Code</Company>
-    <PackageLicenseUrl>https://github.com/SimpleGitVersion/CodeCake/blob/master/LICENSE.txt</PackageLicenseUrl>
-    <PackageProjectUrl>https://github.com/SimpleGitVersion/CodeCake</PackageProjectUrl>
-    <PackageIconUrl>https://raw.githubusercontent.com/SimpleGitVersion/CodeCake/blob/master/CodeCake.png</PackageIconUrl>
-    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <Copyright>Copyright (c) 2012-2018 Signature-Code</Copyright>
     <PackageTags>CodeCake Cake Script Build CakeBuild</PackageTags>
   </PropertyGroup>
 
