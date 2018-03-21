@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Globalization;
 using System.Reflection;
 using Cake.Core.IO;
@@ -231,9 +231,6 @@ namespace CodeCake
                 value => value.Value as string,
                 StringComparer.OrdinalIgnoreCase );
         }
-
-        [Obsolete( "Please use CakeEnvironment.Runtime.TargetFramework instead." )]
-        public FrameworkName GetTargetFramework() => _runtime.TargetFramework;
 
     }
 }

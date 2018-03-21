@@ -108,8 +108,8 @@ namespace CodeCake
         /// </summary>
         /// <param name="args">Arguments.</param>
         /// <param name="appRoot">Application root folder</param>
-        /// <returns>0 on success.</returns>
-        public int Run( string[] args, string appRoot = null)
+        /// <returns>The result of the run.</returns>
+        public RunResult Run( string[] args, string appRoot = null)
         {
             var console = new CakeConsole();
             var logger = new SafeCakeLog( console );
@@ -134,18 +134,15 @@ namespace CodeCake
             IToolLocator locator = new ToolLocator( environment, toolRepo, toolStrategy );
             IToolLocator toolLocator = new ToolLocator( environment, toolRepo, toolStrategy  );
             logger.SetVerbosity( options.Verbosity );
+            ICakeArguments arguments = new CakeArguments(options.Arguments);
+            var context = new CakeContext( fileSystem, environment, globber, logger, arguments, processRunner, windowsRegistry, locator );
+
             CodeCakeBuildTypeDescriptor choosenBuild;
             if( !AvailableBuilds.TryGetValue( options.Script, out choosenBuild ) )
             {
                 logger.Error( "Build script '{0}' not found.", options.Script );
-                return -1;
+                return new RunResult( -1, context.IsInteractiveMode(), context.IsAutoInteractiveMode() );
             }
-
-            ICakeArguments arguments = new CakeArguments(options.Arguments);
-
-            var context = new CakeContext( fileSystem, environment, globber, logger, arguments, processRunner, windowsRegistry, locator );
-
-            // Copy the arguments from the options.
 
             // Set the working directory: the solution directory.
             environment.WorkingDirectory = new DirectoryPath( _solutionDirectory );
@@ -178,7 +175,7 @@ namespace CodeCake
                 {
                     case CakeTerminationOption.Error:
                         logger.Error( "Termination with Error: '{0}'.", ex.Message );
-                        return -1;
+                        return new RunResult( -2, context.IsInteractiveMode(), context.IsAutoInteractiveMode() );
                     case CakeTerminationOption.Warning:
                         logger.Warning( "Termination with Warning: '{0}'.", ex.Message );
                         break;
@@ -191,23 +188,20 @@ namespace CodeCake
             catch( TargetInvocationException ex )
             {
                 logger.Error( "Error occurred: '{0}'.", ex.InnerException?.Message ?? ex.Message );
-                return -1;
+                return new RunResult( -3, context.IsInteractiveMode(), context.IsAutoInteractiveMode() );
             }
             catch( Exception ex )
             {
                 logger.Error( "Error occurred: '{0}'.", ex.Message );
-                return -1;
+                return new RunResult( -4, context.IsInteractiveMode(), context.IsAutoInteractiveMode() );
             }
-            return 0;
+            return new RunResult( 0, context.IsInteractiveMode(), context.IsAutoInteractiveMode() );
         }
 
         /// <summary>
         /// Gets a mutable dictionary of build objects.
         /// </summary>
-        public IDictionary<string, CodeCakeBuildTypeDescriptor> AvailableBuilds
-        {
-            get { return _builds; }
-        }
+        public IDictionary<string, CodeCakeBuildTypeDescriptor> AvailableBuilds => _builds; 
 
     }
 }

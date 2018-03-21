@@ -1,117 +1,20 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{246BDFF0-AF13-4353-835C-2C39787339BB}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Code.Cake</RootNamespace>
-    <AssemblyName>Code.Cake</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile />
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
+    <TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
+    <Description>CodeCake offers code based support to Cake (see http://cakebuild.net/ site).</Description>
+    <Authors>Olivier Spinelli</Authors>
+    <Company>Signature-Code</Company>
+    <PackageLicenseUrl>https://github.com/SimpleGitVersion/CodeCake/blob/master/LICENSE.txt</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/SimpleGitVersion/CodeCake</PackageProjectUrl>
+    <PackageIconUrl>https://raw.githubusercontent.com/SimpleGitVersion/CodeCake/blob/master/CodeCake.png</PackageIconUrl>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <Copyright>Copyright (c) 2012-2018 Signature-Code</Copyright>
+    <PackageTags>CodeCake Cake Script Build CakeBuild</PackageTags>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition=" $(GenerateDocumentation) != '' ">
-    <DocumentationFile>bin\$(Configuration)\$(AssemblyName).xml</DocumentationFile>
-  </PropertyGroup>
+
   <ItemGroup>
-    <Reference Include="Cake.Common, Version=0.25.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Cake.Common.0.25.0\lib\net46\Cake.Common.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Cake.Core, Version=0.25.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Cake.Core.0.25.0\lib\net46\Cake.Core.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.IO.Compression" />
-    <Reference Include="System.IO.Compression.FileSystem" />
-    <Reference Include="System.Numerics" />
-    <Reference Include="System.Runtime.Serialization" />
-    <Reference Include="System.Runtime.Serialization.Json" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Xml" />
+    <PackageReference Include="Cake.Common" Version="0.26.1" />
   </ItemGroup>
-  <ItemGroup>
-    <Compile Include="..\SharedVersion.cs">
-      <Link>Properties\SharedVersion.cs</Link>
-    </Compile>
-    <Compile Include="CodeCakeSpecific\AddPathAttribute.cs" />
-    <Compile Include="Arguments\ArgumentParser.cs" />
-    <Compile Include="Arguments\ArgumentTokenizer.cs" />
-    <Compile Include="Arguments\CakeOptions.cs" />
-    <Compile Include="Arguments\IArgumentParser.cs" />
-    <Compile Include="BuildScriptHost.cs" />
-    <Compile Include="CakeArguments.cs" />
-    <Compile Include="CakeConsole.cs" />
-    <Compile Include="CakeReportPrinter.cs" />
-    <Compile Include="CodeCakeApplication.cs" />
-    <Compile Include="CodeCakeSpecific\EnvironmentAddedPath.cs" />
-    <Compile Include="CodeCakeSpecific\Termination\CakeTerminateException.cs" />
-    <Compile Include="CodeCakeSpecific\CodeCakeBuildTypeDescriptor.cs" />
-    <Compile Include="CodeCakeSpecific\CodeCakeHost.cs" />
-    <Compile Include="CodeCakeSpecific\FileAndPathAliases.cs" />
-    <Compile Include="CodeCakeSpecific\Termination\CakeTerminationOption.cs" />
-    <Compile Include="CodeCakeSpecific\Termination\TerminateAliases.cs" />
-    <Compile Include="CodeCakeSpecific\InteractiveAliases.cs" />
-    <Compile Include="CodeCakeSpecific\SecureFiles\RijndaelCrypt.cs" />
-    <Compile Include="CodeCakeSpecific\SecureFiles\SecureFilesAliases.cs" />
-    <Compile Include="CodeCakeSpecific\Solution\ITemporarySolutionFile.cs" />
-    <Compile Include="CodeCakeSpecific\Solution\SolutionExtensions.cs" />
-    <Compile Include="CodeCakeSpecific\Solution\TemporarySolutionFile.cs" />
-    <Compile Include="CodeCakeSpecific\TemporaryFile.cs" />
-    <Compile Include="Diagnostics\CakeBuildLog.cs" />
-    <Compile Include="Diagnostics\ConsolePalette.cs" />
-    <Compile Include="Diagnostics\Formatting\FormatParser.cs" />
-    <Compile Include="Diagnostics\Formatting\FormatToken.cs" />
-    <Compile Include="Diagnostics\Formatting\LiteralToken.cs" />
-    <Compile Include="Diagnostics\Formatting\PropertyToken.cs" />
-    <Compile Include="Diagnostics\IVerbosityAware.cs" />
-    <Compile Include="CodeCakeSpecific\MutableCakeEnvironment.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="..\packages\SimpleGitVersionTask.0.30.0\build\SimpleGitVersionTask.targets" Condition="Exists('..\packages\SimpleGitVersionTask.0.30.0\build\SimpleGitVersionTask.targets')" />
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('..\packages\SimpleGitVersionTask.0.30.0\build\SimpleGitVersionTask.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\SimpleGitVersionTask.0.30.0\build\SimpleGitVersionTask.targets'))" />
-  </Target>
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+
 </Project>

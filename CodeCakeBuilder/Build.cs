@@ -27,8 +27,7 @@ namespace CodeCake
     /// <summary>
     /// CodeCakeBuilder for Code.Cake.
     /// </summary>
-    [AddPath( "CodeCakeBuilder/Tools", isDynamicPath: false )]
-    [AddPath( "packages/**/tools*", isDynamicPath: false )]
+    [AddPath( "%UserProfile%/.nuget/packages/**/tools*" )]
     // These dynamic paths are used to test the dynamic path feature itself.
     // This is the default (starting with version v0.8.0).
     [AddPath( "CodeCakeBuilder/**/TestDynamic?", isDynamicPath: true )]
@@ -38,8 +37,8 @@ namespace CodeCake
         public Build()
         {
             var releasesDir = Cake.Directory( "CodeCakeBuilder/Releases" );
-            string configuration = "Debug";
             SimpleRepositoryInfo gitInfo = Cake.GetSimpleRepositoryInfo();
+            string configuration = "Debug";
 
             Task( "Check-Repository" )
                 .Does( () =>
@@ -66,12 +65,6 @@ namespace CodeCake
                     Cake.CleanDirectories( "**/bin/" + configuration, d => !d.Path.Segments.Contains( "CodeCakeBuilder" ) );
                     Cake.CleanDirectories( "**/obj/" + configuration, d => !d.Path.Segments.Contains( "CodeCakeBuilder" ) );
                     Cake.CleanDirectories( releasesDir );
-                } );
-
-            Task( "Restore-NuGet-Packages" )
-                .Does( () =>
-                {
-                    Cake.NuGetRestore( "CodeCake.sln" );
                 } );
 
             Task( "AutoTests" )
@@ -102,12 +95,11 @@ namespace CodeCake
 
             Task( "Build" )
                 .IsDependentOn( "Clean" )
-                .IsDependentOn( "Restore-NuGet-Packages" )
                 .IsDependentOn( "Check-Repository" )
                 .IsDependentOn( "AutoTests" )
                 .Does( () =>
                 {
-                    Cake.Information( "Building CodeCake.sln with '{0}' configuration (excluding this builder application).", configuration );
+                    Cake.Information( $"Building CodeCake.sln with '{configuration}' configuration (excluding this builder application)." );
                     // CreateTemporarySolutionFile is a feature of Code.Cake.
                     using( var tempSln = Cake.CreateTemporarySolutionFile( "CodeCake.sln" ) )
                     {
