@@ -35,7 +35,7 @@ namespace CodeCake
         {
             if( context.HasArgument( NoInteractionArgument ) ) return CodeCake.InteractiveMode.NoInteraction;
             if( context.HasArgument( AutoInteractionArgument ) ) return CodeCake.InteractiveMode.AutoInteraction;
-            return CodeCake.InteractiveMode.NoInteraction;
+            return CodeCake.InteractiveMode.Interactive;
         }
 
         /// <summary>
