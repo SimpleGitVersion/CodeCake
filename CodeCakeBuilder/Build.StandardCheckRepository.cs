@@ -15,7 +15,7 @@ namespace CodeCake
             string configuration = "Debug";
             if( !gitInfo.IsValid )
             {
-                if( Cake.IsInteractiveMode()
+                if( Cake.InteractiveMode() != InteractiveMode.NoInteraction
                     && Cake.ReadInteractiveOption( "PublishDirtyRepo", "Repository is not ready to be published. Proceed anyway?", 'Y', 'N' ) == 'Y' )
                 {
                     Cake.Warning( "GitInfo is not valid, but you choose to continue..." );

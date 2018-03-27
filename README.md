@@ -88,7 +88,7 @@ namespace CodeCake
         {
             var app = new CodeCakeApplication();
             RunResult result = app.Run( args );
-            if( result.IsInteractiveMode )
+            if( result.InteractiveMode == InteractiveMode.Interactive )
             {
                 Console.WriteLine();
                 Console.WriteLine( $"Hit any key to exit." );
@@ -127,7 +127,7 @@ By default CodeCake runs in interactive mode. This enables yor script to ask you
 ```csharp
     Task( "Run-IntegrationTests" )
         .IsDependentOn( "Compile-IntegrationTests" )
-        .WithCriteria( () => !Cake.IsInteractiveMode()
+        .WithCriteria( () => Cake.InteractiveMode() == InteractiveMode.NoInteraction
                             || Cake.ReadInteractiveOption( "Run integration tests?", 'Y', 'N' ) == 'Y' )
         .Does( () =>
         {
