@@ -145,7 +145,7 @@ can drive the behavior of the execution. Given the sample script below:
 
 ```csharp
     IEnumerable<FilePath> nugetPackages = Cake.GetFiles( releasesDir.Path + "/*.nupkg" );
-    if( Cake.IsInteractiveMode() )
+    if( Cake.InteractiveMode() != InteractiveMode.NoInteraction )
     {
         var localFeed = Cake.FindDirectoryAbove( "LocalFeed" );
         if( localFeed != null )

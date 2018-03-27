@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "Run": {
-      "commandName": "project",
-      "commandLineArgs": "-autointeraction"
-    }
-  }
-}
