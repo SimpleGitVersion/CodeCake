@@ -141,7 +141,7 @@ namespace CodeCake
             if( !AvailableBuilds.TryGetValue( options.Script, out choosenBuild ) )
             {
                 logger.Error( "Build script '{0}' not found.", options.Script );
-                return new RunResult( -1, context.IsInteractiveMode(), context.IsAutoInteractiveMode() );
+                return new RunResult( -1, context.InteractiveMode() );
             }
 
             // Set the working directory: the solution directory.
@@ -175,7 +175,7 @@ namespace CodeCake
                 {
                     case CakeTerminationOption.Error:
                         logger.Error( "Termination with Error: '{0}'.", ex.Message );
-                        return new RunResult( -2, context.IsInteractiveMode(), context.IsAutoInteractiveMode() );
+                        return new RunResult( -2, context.InteractiveMode() );
                     case CakeTerminationOption.Warning:
                         logger.Warning( "Termination with Warning: '{0}'.", ex.Message );
                         break;
@@ -188,14 +188,14 @@ namespace CodeCake
             catch( TargetInvocationException ex )
             {
                 logger.Error( "Error occurred: '{0}'.", ex.InnerException?.Message ?? ex.Message );
-                return new RunResult( -3, context.IsInteractiveMode(), context.IsAutoInteractiveMode() );
+                return new RunResult( -3, context.InteractiveMode() );
             }
             catch( Exception ex )
             {
                 logger.Error( "Error occurred: '{0}'.", ex.Message );
-                return new RunResult( -4, context.IsInteractiveMode(), context.IsAutoInteractiveMode() );
+                return new RunResult( -4, context.InteractiveMode() );
             }
-            return new RunResult( 0, context.IsInteractiveMode(), context.IsAutoInteractiveMode() );
+            return new RunResult( 0, context.InteractiveMode() );
         }
 
         /// <summary>

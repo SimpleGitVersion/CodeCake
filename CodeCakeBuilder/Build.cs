@@ -132,7 +132,7 @@ namespace CodeCake
             Task( "Push-NuGet-Packages" )
                 .IsDependentOn( "Create-NuGet-Packages" )
                 .WithCriteria( () => gitInfo.IsValid )
-                .Does( () =>
+               .Does( () =>
                 {
                     StandardPushNuGetPackages( Cake.GetFiles( releasesDir.Path + "/*.nupkg" ), gitInfo );
                 } );

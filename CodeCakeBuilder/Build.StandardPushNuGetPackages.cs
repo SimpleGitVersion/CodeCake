@@ -15,7 +15,7 @@ namespace CodeCake
 
         void StandardPushNuGetPackages( IEnumerable<FilePath> nugetPackages, SimpleRepositoryInfo gitInfo )
         {
-            if( Cake.IsInteractiveMode() )
+            if( Cake.InteractiveMode() != InteractiveMode.NoInteraction )
             {
                 var localFeed = Cake.FindDirectoryAbove( "LocalFeed" );
                 if( localFeed != null )

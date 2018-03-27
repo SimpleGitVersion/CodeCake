@@ -23,11 +23,28 @@ namespace CodeCake
         /// </summary>
         public static readonly string AutoInteractionArgument = "autointeraction";
 
+
         /// <summary>
-        /// Gets whether the context supports interaction with the user (depends on -nointeraction argument).
+        /// Gets the current <see cref="CodeCake.InteractiveMode"/>.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <returns>The mode.</returns>
+        [CakeAliasCategory( "Interactive mode" )]
+        [CakeMethodAlias]
+        public static InteractiveMode InteractiveMode( this ICakeContext context )
+        {
+            if( context.HasArgument( NoInteractionArgument ) ) return CodeCake.InteractiveMode.NoInteraction;
+            if( context.HasArgument( AutoInteractionArgument ) ) return CodeCake.InteractiveMode.AutoInteraction;
+            return CodeCake.InteractiveMode.NoInteraction;
+        }
+
+        /// <summary>
+        /// Gets whether the context requires interaction with the user:
+        /// False if -nointeraction or -autointeraction argument has been provided, true if no specific argument have been provided.
         /// </summary>
         /// <param name="context">The context.</param>
         /// <returns>True if interactive mode is available, false otherwise.</returns>
+        [Obsolete( "Use the less ambiguous InteractiveMode() enum value instead.", false)]
         [CakeAliasCategory( "Interactive mode" )]
         [CakeMethodAlias]
         public static bool IsInteractiveMode( this ICakeContext context )
@@ -36,11 +53,12 @@ namespace CodeCake
         }
 
         /// <summary>
-        /// Gets whether the context supports interaction with the user (this can be true only if <see cref="IsInteractiveMode(ICakeContext)"/>
-        /// is true) in automatic mode.
+        /// Gets whether the context supports automatic interaction (argument -autointeraction has been provided).
+        /// When this is true, <see cref="IsInteractiveMode"/> is false. 
         /// </summary>
         /// <param name="context">The context.</param>
         /// <returns>True if interactive mode is available, false otherwise.</returns>
+        [Obsolete( "Use the less ambiguous InteractiveMode() enum value instead.", false )]
         [CakeAliasCategory( "Interactive mode" )]
         [CakeMethodAlias]
         public static bool IsAutoInteractiveMode( this ICakeContext context )
@@ -90,7 +108,8 @@ namespace CodeCake
         static char DoReadInteractiveOption( ICakeContext context, string argumentName, string message, char[] options )
         {
             if( options == null || options.Length == 0 ) throw new ArgumentException( "At least one (uppercase) character for options must be provided." );
-            if( !IsInteractiveMode( context ) ) throw new InvalidOperationException( "Interactions are not allowed." );
+            var mode = InteractiveMode( context );
+            if( mode == CodeCake.InteractiveMode.NoInteraction ) throw new InvalidOperationException( "Interactions are not allowed." );
             if( options.Any( c => char.IsLower( c ) ) ) throw new ArgumentException( "Options must be uppercase letter." );
 
             string choices = String.Join( "/", options );
@@ -116,7 +135,7 @@ namespace CodeCake
                     return c;
                 }
             }
-            if( IsAutoInteractiveMode( context ) )
+            if( mode == CodeCake.InteractiveMode.AutoInteraction )
             {
                 char c = options[0];
                 Console.WriteLine( c );
@@ -152,10 +171,11 @@ namespace CodeCake
         public static string InteractiveEnvironmentVariable( this ICakeContext context, string variable, bool setCache = true )
         {
             string v = context.EnvironmentVariable( variable );
-            if( v == null && IsInteractiveMode( context ) )
+            var mode = InteractiveMode( context );
+            if( v == null && mode != CodeCake.InteractiveMode.NoInteraction )
             {
                 Console.Write( $"Environment Variable '{variable}' not found. Enter its value: " );
-                if( IsAutoInteractiveMode( context ) )
+                if( mode == CodeCake.InteractiveMode.AutoInteraction )
                 {
                     string fromArgName = "ENV:" + variable;
                     string fromArg = context.Arguments.HasArgument( fromArgName ) ? context.Arguments.GetArgument( fromArgName ) : null;

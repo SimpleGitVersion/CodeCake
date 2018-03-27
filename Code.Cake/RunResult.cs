@@ -17,26 +17,19 @@ namespace CodeCake
         public readonly int ReturnCode;
 
         /// <summary>
-        /// Gets whether the context is in interactive
-        /// mode (see <see cref="InteractiveAliases.IsInteractiveMode(Cake.Core.ICakeContext)"/>).
+        /// Gets the context's interactive mode.
         /// </summary>
-        public readonly bool IsInteractiveMode;
-
-        /// <summary>
-        /// Gets whether the context is in auto interactive
-        /// mode (see <see cref="InteractiveAliases.IsAutoInteractiveMode(Cake.Core.ICakeContext)"/>).
-        /// </summary>
-        public readonly bool IsAutoInteractiveMode;
+        public readonly InteractiveMode InteractiveMode;
 
         /// <summary>
         /// Gets whether the run succeeded (<see cref="ReturnCode"/> is 0).
         /// </summary>
         public bool Success => ReturnCode == 0;
 
-        internal RunResult( int returnCode, bool isInteractiveMode, bool isAutoInteractiveMode )
-        {            ReturnCode = returnCode;
-            IsInteractiveMode = isInteractiveMode;
-            IsAutoInteractiveMode = isAutoInteractiveMode;
+        internal RunResult( int returnCode, InteractiveMode mode )
+        {
+            ReturnCode = returnCode;
+            InteractiveMode = mode;
         }
 
         /// <summary>
