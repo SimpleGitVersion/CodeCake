@@ -57,6 +57,26 @@ namespace CodeCake
             // Configuration is either "Debug" or "Release".
             string configuration = "Debug";
 
+            Setup( context =>
+            {
+                context.Information( "Executed BEFORE the first task." );
+            } );
+
+            Teardown( context =>
+            {
+                context.Information( "Executed AFTER the last task." );
+            } );
+
+            TaskSetup( setupContext =>
+            {
+                setupContext.Information( $"TaskSetup for Task: {setupContext.Task.Name}" );
+            } );
+
+            TaskTeardown( teardownContext =>
+            {
+                teardownContext.Information( $"TaskTeardown for Task: {teardownContext.Task.Name}" );
+            } );
+
             Task( "Check-Repository" )
                 .Does( () =>
                 {
