@@ -68,7 +68,8 @@ namespace CodeCake
 
         /// <summary>
         /// Prompts the user for one of the <paramref name="options"/> characters that MUST be uppercase.
-        /// <see cref="IsInteractiveMode(ICakeContext)"/> must be true otherwise an <see cref="InvalidOperationException"/> is thrown.
+        /// <see cref="InteractiveMode()"/> must be <see cref="CodeCake.InteractiveMode.AutoInteraction"/>
+        /// or <see cref="CodeCake.InteractiveMode.Interactive"/> otherwise an <see cref="InvalidOperationException"/> is thrown.
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="message">
@@ -87,7 +88,8 @@ namespace CodeCake
         /// <summary>
         /// Prompts the user for one of the <paramref name="options"/> characters that MUST be uppercase after
         /// having looked for a program argument that answers the prompt.
-        /// <see cref="IsInteractiveMode(ICakeContext)"/> must be true otherwise an <see cref="InvalidOperationException"/> is thrown.
+        /// <see cref="InteractiveMode()"/> must be <see cref="CodeCake.InteractiveMode.AutoInteraction"/>
+        /// or <see cref="CodeCake.InteractiveMode.Interactive"/> otherwise an <see cref="InvalidOperationException"/> is thrown.
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="argumentName">Name of the command line argument.</param>
@@ -161,6 +163,7 @@ namespace CodeCake
         /// <summary>
         /// Retrieves the value of the environment variable or null if the environment variable do not exist
         /// and can not be given by the user.
+        /// In -autointeraction mode, the value can be provided on the commannd line using ENV:<paramref name="variable"/>=... parameter.
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="variable">The environment variable.</param>

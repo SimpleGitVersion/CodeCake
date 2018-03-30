@@ -90,7 +90,11 @@ namespace CodeCake
                     Cake.CleanDirectories( releasesDir );
                 } );
 
+            // Use N as the first answser: this test takes a looong time (why?)
+            // In -autointeraction mode, this will be skipped (unless explicitly asked from the command line).
             Task( "AutoTests" )
+               .WithCriteria( () => Cake.InteractiveMode() == InteractiveMode.NoInteraction
+                                    || Cake.ReadInteractiveOption( "RunAutoTests", "Run Auto Tests (for Dynamic paths)?", 'N', 'Y' ) == 'Y')
                .Does( () =>
                {
                    void ShouldFindAutoTestFolderFromDynamicPaths( bool shouldFind )
