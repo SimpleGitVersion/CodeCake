@@ -2,7 +2,7 @@
   <Branches>
     <Branch Name="master" CIVersionMode="None" />
     <Branch Name="develop" VersionName="develop" CIVersionMode="LastReleaseBased" />
-    <Branch Name="blank-dev" VersionName="blank" />
+    <Branch Name="blank-dev" VersionName="blank" CIVersionMode="LastReleaseBased" />
   </Branches>
   <StartingVersionForCSemVer>v0.6.0-rc</StartingVersionForCSemVer>
   <!-- <Debug IgnoreDirtyWorkingFolder="true"/> -->
