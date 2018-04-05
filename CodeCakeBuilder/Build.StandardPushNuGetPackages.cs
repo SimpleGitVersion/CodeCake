@@ -21,7 +21,7 @@ namespace CodeCake
                 if( localFeed != null )
                 {
                     Cake.Information( $"LocalFeed directory found: {localFeed}" );
-                    if( Cake.ReadInteractiveOption( "LocalFeed", "Do you want to publish to LocalFeed?", 'Y', 'N' ) == 'Y' )
+                    if( Cake.ReadInteractiveOption( "LocalFeed", "Do you want to publish to LocalFeed?", 'N', 'Y' ) == 'Y' )
                     {
                         Cake.CopyFiles( nugetPackages, localFeed );
                     }
