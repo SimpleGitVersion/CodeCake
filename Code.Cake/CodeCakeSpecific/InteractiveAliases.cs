@@ -163,7 +163,7 @@ namespace CodeCake
         /// <summary>
         /// Retrieves the value of the environment variable or null if the environment variable do not exist
         /// and can not be given by the user.
-        /// In -autointeraction mode, the value can be provided on the commannd line using ENV:<paramref name="variable"/>=... parameter.
+        /// In -autointeraction mode, the value can be provided on the commannd line using -ENV:<paramref name="variable"/>=... parameter.
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="variable">The environment variable.</param>
