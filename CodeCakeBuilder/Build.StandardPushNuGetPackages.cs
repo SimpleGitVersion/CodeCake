@@ -23,6 +23,12 @@ namespace CodeCake
                     Cake.Information( $"LocalFeed directory found: {localFeed}" );
                     if( Cake.ReadInteractiveOption( "LocalFeed", "Do you want to publish to LocalFeed?", 'N', 'Y' ) == 'Y' )
                     {
+                        bool isBlankCIRelease = gitInfo.Info.FinalSemVersion.Prerelease?.Contains( "ci-blank." ) ?? false;
+                        if( isBlankCIRelease )
+                        {
+                            localFeed = System.IO.Path.Combine( localFeed, "Blank" );
+                            System.IO.Directory.CreateDirectory( localFeed );
+                        }
                         Cake.CopyFiles( nugetPackages, localFeed );
                     }
                 }
