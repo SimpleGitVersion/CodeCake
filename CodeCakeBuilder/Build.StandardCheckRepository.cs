@@ -50,6 +50,11 @@ namespace CodeCake
             /// <param name="version">The package version.</param>
             /// <returns>True if the package exists, false otherwise.</returns>
             public abstract Task<bool> CheckPackageAsync( HttpClient client, string packageId, string version );
+
+            /// <summary>
+            /// Gets or sets the actual api key that should be obtained from <see cref="APIKeyName"/>.
+            /// </summary>
+            public string ActualAPIKey { get; set; }
         }
 
         class MyGetPublicFeed : NuGetRemoteFeed
@@ -252,6 +257,15 @@ namespace CodeCake
                     var notOk = requests.Where( r => !r.ExistsAsync.Result ).Select( r => r.Project );
                     result.RemoteFeed.PackagesToPush.AddRange( notOk );
                     DispalyFeedPackageResult( result.RemoteFeed.PushUrl, result.RemoteFeed.PackagesToPush, requests.Count );
+                    // If there is at least a package to push, challenge the key right now: if the key can not be obtained, then
+                    // we clear the list.
+                    var apiKey = Cake.InteractiveEnvironmentVariable( result.RemoteFeed.APIKeyName );
+                    if( string.IsNullOrEmpty( apiKey ) )
+                    {
+                        Cake.Information( $"Could not resolve {result.RemoteFeed.APIKeyName}. Push to {result.RemoteFeed.PushUrl} is skipped." );
+                        result.RemoteFeed.PackagesToPush.Clear();
+                    }
+                    else result.RemoteFeed.ActualAPIKey = apiKey;
                 }
             }
             if( result.LocalFeedPath != null )
