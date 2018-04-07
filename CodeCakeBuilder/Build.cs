@@ -52,10 +52,11 @@ namespace CodeCake
             // We do not publish .Tests projects for this solution.
             var projectsToPublish = projects.Where( p => !p.Path.Segments.Contains( "Tests" ) );
 
+            // The SimpleRepositoryInfo should be computed once and only once.
             SimpleRepositoryInfo gitInfo = Cake.GetSimpleRepositoryInfo();
-
-            // Configuration is either "Debug" or "Release".
-            string configuration = "Debug";
+            // This default global info will be replaced by Check-Repository task.
+            // It is allocated here to ease debugging and/or manual work on complex build script.
+            CheckRepositoryInfo globalInfo = new CheckRepositoryInfo { Version = gitInfo.SafeNuGetVersion };
 
             Setup( context =>
             {
@@ -80,7 +81,11 @@ namespace CodeCake
             Task( "Check-Repository" )
                 .Does( () =>
                 {
-                    configuration = StandardCheckRepository( projectsToPublish, gitInfo );
+                    globalInfo = StandardCheckRepository( projectsToPublish, gitInfo );
+                    if( globalInfo.ShouldStop )
+                    {
+                        Cake.TerminateWithSuccess( "All packages from this commit are already available. Build skipped." );
+                    }
                 } );
 
             Task( "Clean" )
@@ -142,7 +147,7 @@ namespace CodeCake
                 .IsDependentOn( "AutoTests" )
                 .Does( () =>
                 {
-                    StandardSolutionBuild( solutionFileName, gitInfo, configuration );
+                    StandardSolutionBuild( solutionFileName, gitInfo, globalInfo.BuildConfiguration );
                 } );
 
             Task( "Create-NuGet-Packages" )
@@ -150,7 +155,7 @@ namespace CodeCake
                 .IsDependentOn( "Build" )
                 .Does( () =>
                 {
-                    StandardCreateNuGetPackages( releasesDir, projectsToPublish, gitInfo, configuration );
+                    StandardCreateNuGetPackages( releasesDir, projectsToPublish, gitInfo, globalInfo.BuildConfiguration );
                 } );
 
             Task( "Push-NuGet-Packages" )
@@ -158,7 +163,7 @@ namespace CodeCake
                 .WithCriteria( () => gitInfo.IsValid )
                .Does( () =>
                 {
-                    StandardPushNuGetPackages( Cake.GetFiles( releasesDir.Path + "/*.nupkg" ), gitInfo );
+                    StandardPushNuGetPackages( globalInfo, releasesDir );
                 } );
 
             Task( "Default" ).IsDependentOn( "Push-NuGet-Packages" );
