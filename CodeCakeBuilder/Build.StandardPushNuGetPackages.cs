@@ -1,108 +1,82 @@
-using Cake.Common.Build;
 using Cake.Common.Diagnostics;
 using Cake.Common.IO;
+using Cake.Common.Solution;
 using Cake.Common.Tools.NuGet;
 using Cake.Common.Tools.NuGet.Push;
-using Cake.Core.IO;
-using SimpleGitVersion;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.Linq;
 
 namespace CodeCake
 {
     public partial class Build
     {
-
-        void StandardPushNuGetPackages( IEnumerable<FilePath> nugetPackages, SimpleRepositoryInfo gitInfo )
+        /// <summary>
+        /// Pushes produced packages in CodeCakeBuilder/Releases for projects that appear in
+        /// <see cref="CheckRepositoryInfo.ActualPackagesToPublish"/> into <see cref="CheckRepositoryInfo.LocalFeedPath"/>
+        /// and <see cref="CheckRepositoryInfo.RemoteFeed"/> if they are not null.
+        /// </summary>
+        /// <param name="globalInfo">The configured <see cref="CheckRepositoryInfo"/>.</param>
+        /// <param name="releasesDir">The releasesDir (normally 'CodeCakeBuilder/Releases').</param>
+        void StandardPushNuGetPackages( CheckRepositoryInfo globalInfo, string releasesDir )
         {
-            if( Cake.InteractiveMode() != InteractiveMode.NoInteraction )
+            // For packages: each of them must exist.
+            IEnumerable<string> ToPackageFiles( IEnumerable<SolutionProject> projects )
             {
-                var localFeed = Cake.FindDirectoryAbove( "LocalFeed" );
-                if( localFeed != null )
+                return projects.Select( p => System.IO.Path.Combine( releasesDir, $"{p.Name}.{globalInfo.Version}.nupkg" ) );
+            }
+            // For symbols, handle the fact that they may not exist.
+            IEnumerable<string> ToSymbolFiles( IEnumerable<SolutionProject> projects )
+            {
+                return projects
+                        .Select( p => System.IO.Path.Combine( releasesDir, $"{p.Name}.{globalInfo.Version}.symbols.nupkg" ) )
+                        .Select( p => new { Path = p, Exists = System.IO.File.Exists( p ) } )
+                        .Where( p => p.Exists )
+                        .Select( p => p.Path );
+            }
+
+            if( globalInfo.LocalFeedPath != null && globalInfo.LocalFeedPackagesToCopy.Count > 0 )
+            {
+                if( Cake.InteractiveMode() != InteractiveMode.NoInteraction )
                 {
-                    Cake.Information( $"LocalFeed directory found: {localFeed}" );
                     if( Cake.ReadInteractiveOption( "LocalFeed", "Do you want to publish to LocalFeed?", 'N', 'Y' ) == 'Y' )
                     {
-                        bool isBlankCIRelease = gitInfo.Info.FinalSemVersion.Prerelease?.Contains( "ci-blank." ) ?? false;
-                        if( isBlankCIRelease )
-                        {
-                            localFeed = System.IO.Path.Combine( localFeed, "Blank" );
-                            System.IO.Directory.CreateDirectory( localFeed );
-                        }
-                        Cake.CopyFiles( nugetPackages, localFeed );
+                        Cake.CopyFiles( ToPackageFiles( globalInfo.LocalFeedPackagesToCopy ), globalInfo.LocalFeedPath );
+                        Cake.CopyFiles( ToSymbolFiles( globalInfo.LocalFeedPackagesToCopy ), globalInfo.LocalFeedPath );
                     }
                 }
             }
-            if( gitInfo.IsValidRelease )
+            if( globalInfo.RemoteFeed != null && globalInfo.RemoteFeed.PackagesToPush.Count > 0 )
             {
-                if( gitInfo.PreReleaseName == ""
-                    || gitInfo.PreReleaseName == "prerelease"
-                    || gitInfo.PreReleaseName == "rc" )
-                {
-                    PushNuGetPackages( "MYGET_RELEASE_API_KEY",
-                                        "https://www.myget.org/F/invenietis-release/api/v2/package",
-                                        "https://www.myget.org/F/invenietis-release/symbols/api/v2/package" );
-                }
-                else
-                {
-                    // An alpha, beta, delta, epsilon, gamma, kappa goes to invenietis-preview.
-                    PushNuGetPackages( "MYGET_PREVIEW_API_KEY",
-                                        "https://www.myget.org/F/invenietis-preview/api/v2/package",
-                                        "https://www.myget.org/F/invenietis-preview/symbols/api/v2/package" );
-                }
-            }
-            else
-            {
-                Debug.Assert( gitInfo.IsValidCIBuild );
-                PushNuGetPackages( "MYGET_CI_API_KEY",
-                                    "https://www.myget.org/F/invenietis-ci/api/v2/package",
-                                    "https://www.myget.org/F/invenietis-ci/symbols/api/v2/package" );
-            }
-            if( Cake.AppVeyor().IsRunningOnAppVeyor )
-            {
-                Cake.AppVeyor().UpdateBuildVersion( gitInfo.SafeNuGetVersion );
-            }
-
-            void PushNuGetPackages( string apiKeyName, string pushUrl, string pushSymbolUrl )
-            {
-                // Resolves the API key.
-                var apiKey = Cake.InteractiveEnvironmentVariable( apiKeyName );
+                var apiKey = Cake.InteractiveEnvironmentVariable( globalInfo.RemoteFeed.APIKeyName );
                 if( string.IsNullOrEmpty( apiKey ) )
                 {
-                    Cake.Information( $"Could not resolve {apiKeyName}. Push to {pushUrl} is skipped." );
+                    Cake.Information( $"Could not resolve {globalInfo.RemoteFeed.APIKeyName}. Push to {globalInfo.RemoteFeed.PushUrl} is skipped." );
                 }
                 else
                 {
                     var settings = new NuGetPushSettings
                     {
-                        Source = pushUrl,
+                        Source = globalInfo.RemoteFeed.PushUrl,
                         ApiKey = apiKey,
                         Verbosity = NuGetVerbosity.Detailed
                     };
-                    NuGetPushSettings symbSettings = null;
-                    if( pushSymbolUrl != null )
+                    foreach( var file in ToPackageFiles( globalInfo.RemoteFeed.PackagesToPush ) )
                     {
-                        symbSettings = new NuGetPushSettings
+                        Cake.Information( $"Pushing '{file}' to '{globalInfo.RemoteFeed.PushUrl}'." );
+                        Cake.NuGetPush( file, settings );
+                    }
+                    if( globalInfo.RemoteFeed.PushSymbolUrl != null )
+                    {
+                        NuGetPushSettings symbSettings = new NuGetPushSettings
                         {
-                            Source = pushSymbolUrl,
+                            Source = globalInfo.RemoteFeed.PushSymbolUrl,
                             ApiKey = apiKey,
                             Verbosity = NuGetVerbosity.Detailed
                         };
-                    }
-                    foreach( var nupkg in nugetPackages )
-                    {
-                        if( !nupkg.FullPath.EndsWith( ".symbols.nupkg" ) )
+                        foreach( var file in ToSymbolFiles( globalInfo.RemoteFeed.PackagesToPush ) )
                         {
-                            Cake.Information( $"Pushing '{nupkg}' to '{pushUrl}'." );
-                            Cake.NuGetPush( nupkg, settings );
-                        }
-                        else
-                        {
-                            if( symbSettings != null )
-                            {
-                                Cake.Information( $"Pushing Symbols '{nupkg}' to '{pushSymbolUrl}'." );
-                                Cake.NuGetPush( nupkg, symbSettings );
-                            }
+                            Cake.Information( $"Pushing Symbols '{file}' to '{globalInfo.RemoteFeed.PushSymbolUrl}'." );
+                            Cake.NuGetPush( file, symbSettings );
                         }
                     }
                 }
