@@ -190,10 +190,19 @@ namespace CodeCake
                 logger.Error( "Error occurred: '{0}'.", ex.InnerException?.Message ?? ex.Message );
                 return new RunResult( -3, context.InteractiveMode() );
             }
+            catch( AggregateException ex )
+            {
+                logger.Error( "Error occurred: '{0}'.", ex.Message );
+                foreach( var e in ex.InnerExceptions )
+                {
+                    logger.Error( "  -> '{0}'.", e.Message );
+                }
+                return new RunResult( -4, context.InteractiveMode() );
+            }
             catch( Exception ex )
             {
                 logger.Error( "Error occurred: '{0}'.", ex.Message );
-                return new RunResult( -4, context.InteractiveMode() );
+                return new RunResult( -5, context.InteractiveMode() );
             }
             return new RunResult( 0, context.InteractiveMode() );
         }
