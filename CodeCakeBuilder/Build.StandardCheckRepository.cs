@@ -1,3 +1,4 @@
+using Cake.Common;
 using Cake.Common.Build;
 using Cake.Common.Diagnostics;
 using Cake.Common.Solution;
@@ -309,6 +310,10 @@ namespace CodeCake
             if( nbPackagesToPublish == 0 )
             {
                 Cake.Information( $"No packages out of {projectsToPublish.Count()} projects to publish." );
+                if( Cake.Argument( "IgnoreNoPackagesToProduce", 'N' ) == 'Y' )
+                {
+                    result.IgnoreNoPackagesToProduce = true;
+                }
             }
             else
             {
