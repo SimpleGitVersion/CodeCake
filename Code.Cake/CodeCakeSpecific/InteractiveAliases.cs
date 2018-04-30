@@ -87,7 +87,7 @@ namespace CodeCake
 
         /// <summary>
         /// Prompts the user for one of the <paramref name="options"/> characters that MUST be uppercase after
-        /// having looked for a program argument that answers the prompt.
+        /// having looked for a program argument that answers the prompt (ex: -RunUnitTests=N).
         /// <see cref="InteractiveMode()"/> must be <see cref="CodeCake.InteractiveMode.AutoInteraction"/>
         /// or <see cref="CodeCake.InteractiveMode.Interactive"/> otherwise an <see cref="InvalidOperationException"/> is thrown.
         /// </summary>
