@@ -224,7 +224,7 @@ namespace CodeCake
                 // gitInfo is valid: it is either ci or a release build. 
                 // Blank releases must not be pushed on any remote and are compied to LocalFeed/Blank
                 // local feed it it exists.
-                bool isBlankCIRelease = gitInfo.Info.FinalSemVersion.Prerelease.Contains( "ci-blank." );
+                bool isBlankCIRelease = gitInfo.Info.FinalSemVersion.Prerelease.EndsWith( ".blank" );
                 var localFeed = Cake.FindDirectoryAbove( "LocalFeed" );
                 if( localFeed != null && isBlankCIRelease )
                 {
