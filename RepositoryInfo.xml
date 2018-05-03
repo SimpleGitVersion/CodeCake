@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8"?>
 <RepositoryInfo xmlns="http://csemver.org/schemas/2015">
   <Branches>
     <Branch Name="master" CIVersionMode="None" />
