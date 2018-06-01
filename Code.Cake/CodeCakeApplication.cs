@@ -161,8 +161,10 @@ namespace CodeCake
                 CodeCakeHost._injectedActualHost = new BuildScriptHost( engine, context );
                 CodeCakeHost c = (CodeCakeHost)Activator.CreateInstance( choosenBuild.Type );
 
-                var strategy = new DefaultExecutionStrategy( logger );
-                var report = engine.RunTargetAsync( context, strategy, context.Arguments.GetArgument( "target" ) ?? "Default" ).GetAwaiter().GetResult();
+                var target = context.Arguments.GetArgument( "target" ) ?? "Default";
+                var exclusiveTarget = context.Arguments.HasArgument( "exclusive" );
+                var strategy = new CodeCakeExecutionStrategy( logger, exclusiveTarget ? target : null );
+                var report = engine.RunTargetAsync( context, strategy, target ).GetAwaiter().GetResult();
                 if( report != null && !report.IsEmpty )
                 {
                     var printerReport = new CakeReportPrinter( console );
