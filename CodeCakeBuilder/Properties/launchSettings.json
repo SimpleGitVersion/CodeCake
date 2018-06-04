@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "CodeCakeBuilder": {
+      "commandName": "Project",
+      // "commandLineArgs": "-target=Build -exclusive"
+    }
+  }
+}

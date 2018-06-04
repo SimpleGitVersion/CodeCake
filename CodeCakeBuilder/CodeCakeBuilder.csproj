@@ -5,8 +5,7 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Code.Cake\Code.Cake.csproj" />
-    <PackageReference Include="CK.Text" Version="6.2.2-C0050-develop" />
-    <PackageReference Include="SimpleGitVersion.Cake" Version="0.32.1-C0022-explore" />
-    <PackageReference Include="SimpleGitVersion.Core" Version="0.32.1-C0022-explore" />
+    <PackageReference Include="CK.Text" Version="7.0.1-C0017-develop" />
+    <PackageReference Include="SimpleGitVersion.Cake" Version="0.34.1-C0008-develop" />
   </ItemGroup>
 </Project>

@@ -121,7 +121,7 @@ namespace CodeCake
             /// <summary>
             /// Gets whether this is a blank build.
             /// </summary>
-            public bool IsBlankCIRelease { get; set; }
+            public bool IsLocalCIRelease { get; set; }
 
             /// <summary>
             /// Gets a mutable list of SolutionProject for which packages should be created and copied
@@ -223,20 +223,20 @@ namespace CodeCake
             else
             {
                 // gitInfo is valid: it is either ci or a release build. 
-                // Blank releases must not be pushed on any remote and are compied to LocalFeed/Blank
-                // local feed it it exists.
-                bool isBlankCIRelease = gitInfo.Info.FinalSemVersion.Prerelease.EndsWith( ".blank" );
+                // Local releases must not be pushed on any remote and are copied to LocalFeed/Local
+                // feed (if LocalFeed/ directory above exists).
+                bool isLocalCIRelease = gitInfo.Info.FinalSemVersion.Prerelease.EndsWith( ".local" );
                 var localFeed = Cake.FindDirectoryAbove( "LocalFeed" );
-                if( localFeed != null && isBlankCIRelease )
+                if( localFeed != null && isLocalCIRelease )
                 {
-                    localFeed = System.IO.Path.Combine( localFeed, "Blank" );
+                    localFeed = System.IO.Path.Combine( localFeed, "Local" );
                     System.IO.Directory.CreateDirectory( localFeed );
                 }
-                result.IsBlankCIRelease = isBlankCIRelease;
+                result.IsLocalCIRelease = isLocalCIRelease;
                 result.LocalFeedPath = localFeed;
 
                 // Creating the right NuGetRemoteFeed according to the release level.
-                if( !isBlankCIRelease )
+                if( !isLocalCIRelease )
                 {
                     if( gitInfo.IsValidRelease )
                     {
