@@ -162,8 +162,14 @@ namespace CodeCake
                 CodeCakeHost c = (CodeCakeHost)Activator.CreateInstance( choosenBuild.Type );
 
                 var target = context.Arguments.GetArgument( "target" ) ?? "Default";
-                var exclusiveTarget = context.Arguments.HasArgument( "exclusive" );
+                var exclusiveTargetOptional = context.Arguments.HasArgument( "exclusiveOptional" );
+                var exclusiveTarget = exclusiveTargetOptional | context.Arguments.HasArgument( "exclusive" );
                 var strategy = new CodeCakeExecutionStrategy( logger, exclusiveTarget ? target : null );
+                if( exclusiveTargetOptional && !engine.Tasks.Any( t => t.Name == target ) )
+                {
+                    logger.Warning( $"No task '{target}' defined. Since -exclusiveOptional is specified, nothing is done." );
+                    return new RunResult( 0, context.InteractiveMode() );
+                }
                 var report = engine.RunTargetAsync( context, strategy, target ).GetAwaiter().GetResult();
                 if( report != null && !report.IsEmpty )
                 {

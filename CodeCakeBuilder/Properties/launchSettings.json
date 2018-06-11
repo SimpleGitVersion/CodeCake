@@ -2,7 +2,7 @@
   "profiles": {
     "CodeCakeBuilder": {
       "commandName": "Project",
-      // "commandLineArgs": "-target=Build -exclusive"
+      //"commandLineArgs": "-target=\"Unit-Testing\" -exclusiveOptional"
     }
   }
 }
