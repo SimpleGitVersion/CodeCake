@@ -35,8 +35,8 @@ namespace CodeCake
         /// Performs the setup.
         /// </summary>
         /// <param name="action">The action.</param>
-        /// <param name="context">The context.</param>
-        public void PerformSetup( Action<ICakeContext> action, ICakeContext context )
+        /// <param name="context">The setup context.</param>
+        public void PerformSetup( Action<ISetupContext> action, ISetupContext context )
         {
             _default.PerformSetup( action, context );
         }
@@ -63,7 +63,7 @@ namespace CodeCake
 
             if( _exclusiveTaskName != null && _exclusiveTaskName != task.Name )
             {
-                _default.Skip( task );
+                _default.Skip( task, new CakeTaskCriteria( ctx => true, null ) );
                 return Task.CompletedTask;
             }
             return _default.ExecuteAsync( task, context );
@@ -73,9 +73,10 @@ namespace CodeCake
         /// Skips the specified task.
         /// </summary>
         /// <param name="task">The task to skip.</param>
-        public void Skip( CakeTask task )
+        /// <param name="criteria">The criteria that caused the task to be skipped.</param>
+        public void Skip( CakeTask task, CakeTaskCriteria criteria )
         {
-            _default.Skip( task );
+            _default.Skip( task, criteria );
         }
 
         /// <summary>

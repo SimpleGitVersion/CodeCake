@@ -113,7 +113,8 @@ namespace CodeCake
         {
             var console = new CakeConsole();
             var logger = new SafeCakeLog( console );
-            var engine = new CakeEngine( logger );
+            ICakeDataService dataService = new CodeCakeDataService();
+            var engine = new CakeEngine( dataService, logger );
 
             ICakePlatform platform = new CakePlatform();
             ICakeRuntime runtime = new CakeRuntime();
@@ -135,7 +136,7 @@ namespace CodeCake
             IToolLocator toolLocator = new ToolLocator( environment, toolRepo, toolStrategy  );
             logger.SetVerbosity( options.Verbosity );
             ICakeArguments arguments = new CakeArguments(options.Arguments);
-            var context = new CakeContext( fileSystem, environment, globber, logger, arguments, processRunner, windowsRegistry, locator );
+            var context = new CakeContext( fileSystem, environment, globber, logger, arguments, processRunner, windowsRegistry, locator, dataService );
 
             CodeCakeBuildTypeDescriptor choosenBuild;
             if( !AvailableBuilds.TryGetValue( options.Script, out choosenBuild ) )
