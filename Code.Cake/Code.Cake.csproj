@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Cake.Common" Version="0.27.2" />
+    <PackageReference Include="Cake.Common" Version="0.28.0" />
   </ItemGroup>
 
 </Project>

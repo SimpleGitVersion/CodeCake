@@ -1,11 +1,11 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net461</TargetFramework>
     <OutputType>Exe</OutputType>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Code.Cake\Code.Cake.csproj" />
-    <PackageReference Include="CK.Text" Version="7.0.1-C0037-develop" />
-    <PackageReference Include="SimpleGitVersion.Cake" Version="0.34.1-C0039-develop" />
+    <PackageReference Include="CK.Text" Version="0.0.0-0" />
+    <PackageReference Include="SimpleGitVersion.Cake" Version="0.0.0-0" />
   </ItemGroup>
 </Project>
