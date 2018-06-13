@@ -101,7 +101,8 @@ namespace CodeCake
     }
 }
 ```
-## More information: Multiple Build scripts and Interactive mode
+## More information: Multiple Build scripts, Interactive mode and Exclusive target
+### Multiple Build scripts
 You can have multiple Build class in a CodeCakeBuilder.exe.
 
 ```csharp
@@ -122,7 +123,8 @@ namespace CodeCake
 
 Choose the one you want to run on the command line: `CodeCakeBuilder.exe MySecondBuild`
 
-By default CodeCake runs in interactive mode. This enables yor script to ask you quesions like:
+### Interactive Mode
+By default CodeCake runs in interactive mode. This enables yor script to ask you questions like:
 
 ```csharp
     Task( "Run-IntegrationTests" )
@@ -178,6 +180,24 @@ can drive the behavior of the execution. Given the sample script below:
 Will not push to the local feed but will try to push to the nuget feed.
 With `-autointeraction`, when no command line argument can be found for the `ReadInteractiveOption`, the **first choice is assumed** (for
 the LocalPush above, it would be **Y**[es]).
+
+### Exclusive target and ExclusiveOptional target
+
+CodeCake supports to run one and only one task, ignoring any of its dependencies. This is useful when you need an
+external control of the Build script (when the dependent tasks have alreay been peformed and you don't want to pay the cost of running them again).
+
+`CodeCakeBuilder.exe -nointeraction -target="Unit-Testing" -exclusive`
+
+Will only run the Unit-Testing task but NOT its dependencies.
+
+`CodeCakeBuilder.exe -nointeraction -target="Unit-Testing" -exclusiveOptional`
+
+Will only run the Unit-Testing task (and NOT its dependencies) ONLY if it exists. If the task does not
+exist, nothing is done and a warning is emitted:
+
+`No task 'Unit-Testing' defined. Since -exclusiveOptional is specified, nothing is done.
+
+
 
 ## Build instructions
 
