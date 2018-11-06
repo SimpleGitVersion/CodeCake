@@ -420,7 +420,7 @@ namespace CodeCake
                     }
                     else if( PackagesAlreadyPublishedCount == 0 )
                     {
-                        ctx.Information( $"Feed '{Name}': All {PackagesAlreadyPublishedCount} packages must be pushed." );
+                        ctx.Information( $"Feed '{Name}': All {PackagesToPublish.Count} packages must be pushed." );
                     }
                     else
                     {

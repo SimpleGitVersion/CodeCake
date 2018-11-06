@@ -64,6 +64,11 @@ namespace CodeCake
             /// </summary>
             public IReadOnlyList<SimplePackageId> NuGetPackagesToPublish { get; }
 
+            /// Gets or sets the local feed path.
+            /// Can be null if no local feed exists or if local feed should be ignored.
+            /// </summary>
+            public string LocalFeedPath { get; set; }
+
             /// <summary>
             /// Gets the mutable list of remote feeds to which packages should be pushed.
             /// </summary>
@@ -144,6 +149,7 @@ namespace CodeCake
                     System.IO.Directory.CreateDirectory( localFeed );
                 }
                 result.IsLocalCIRelease = isLocalCIRelease;
+                result.LocalFeedPath = localFeed;
 
                 if( localFeed != null )
                 {
