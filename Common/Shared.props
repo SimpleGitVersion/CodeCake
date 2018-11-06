@@ -1,17 +1,14 @@
-<Project >
-
-    <!-- SharedDir is the /Common directory. -->
-    <PropertyGroup>
-        <SharedDir>$(MSBuildThisFileDirectory)</SharedDir>
-        <IsTestProject Condition="$(MSBuildProjectName.EndsWith('.Tests'))">true</IsTestProject>
-    </PropertyGroup>
-
-    <!-- Xml documentation is generated in Release or during Cake builds (except for tests projects). -->
-    <PropertyGroup Condition=" '$(IsTestProject)' != 'true' And ('$(CakeBuild)' == 'true' Or '$(Configuration)' == 'Release') ">
-        <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    </PropertyGroup>
-
-    <!-- Reproducible builds. See: http://blog.paranoidcoding.com/2016/04/05/deterministic-builds-in-roslyn.html
+<Project>
+  <!-- SharedDir is the /Common directory. -->
+  <PropertyGroup>
+    <SharedDir>$(MSBuildThisFileDirectory)</SharedDir>
+    <IsTestProject Condition="$(MSBuildProjectName.EndsWith('.Tests'))">true</IsTestProject>
+  </PropertyGroup>
+  <!-- Xml documentation is generated in Release or during Cake builds (except for tests projects). -->
+  <PropertyGroup Condition=" '$(IsTestProject)' != 'true' And ('$(CakeBuild)' == 'true' Or '$(Configuration)' == 'Release') ">
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+  <!-- Reproducible builds. See: http://blog.paranoidcoding.com/2016/04/05/deterministic-builds-in-roslyn.html
     On appveyor, the clone folder MUST be set to the solution path in the CK-World.
     For this solution, it is:
 
@@ -19,42 +16,44 @@
 
     This must be adapted for each solution/repository.
   -->
-    <PropertyGroup Condition=" '$(CakeBuild)' == 'true' ">
-        <Deterministic>true</Deterministic>
-        <CKWorldPath>$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), CK-World))</CKWorldPath>
-        <PathMap Condition=" '$(CKWorldPath)' != '' ">$(CKWorldPath)=C:\CK-World</PathMap>
-    </PropertyGroup>
-
-
-    <!-- 
+  <PropertyGroup Condition=" '$(CakeBuild)' == 'true' ">
+    <Deterministic>true</Deterministic>
+    <CKWorldPath>$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), CK-World))</CKWorldPath>
+    <PathMap Condition=" '$(CKWorldPath)' != '' ">$(CKWorldPath)=C:\CK-World</PathMap>
+  </PropertyGroup>
+  <!-- 
     When building from the CI (ie. from Cake, hence directly with the msbuild tool, SolutionDir is not defined),
     we unify the behavior here.
   -->
-    <PropertyGroup Condition=" '$(CakeBuild)' == 'true' ">
-        <SolutionDir>$([System.IO.Path]::GetDirectoryName($([System.IO.Path]::GetDirectoryName($(MSBuildThisFileDirectory)))))\</SolutionDir>
-    </PropertyGroup>
-    <!-- When not building from the CI, assemblies do not have any AssemblyInfo attributes. -->
-    <PropertyGroup Condition=" '$(CakeBuild)' != 'true' ">
-        <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    </PropertyGroup>
-
-    <PropertyGroup>
-        <!-- Standard properties (no strong naming). -->
-        <RepositoryType>git</RepositoryType>
-
-        <!-- Signature-Code standard properties. -->
-        <Authors>Signature-Code</Authors>
-        <Company>Signature-Code</Company>
-
-        <!-- Properties that are solution dependent. -->
-        <Copyright>Copyright Signature-Code 2012-$([System.DateTime]::UtcNow.ToString("yyyy"))</Copyright>
-        <ProductName>CK-Framework</ProductName>
-        <PackageLicenseUrl>https://github.com/SimpleGitVersion/CodeCake/blob/master/LICENSE.txt</PackageLicenseUrl>
-        <PackageProjectUrl>https://github.com/SimpleGitVersion/CodeCake</PackageProjectUrl>
-        <PackageIconUrl>https://raw.githubusercontent.com/SimpleGitVersion/CodeCake/blob/master/CodeCake.png</PackageIconUrl>
-        <RepositoryUrl>https://github.com/SimpleGitVersion/CodeCake</RepositoryUrl>
-        <PackageReleaseNotes>https://github.com/SimpleGitVersion/CodeCake/releases</PackageReleaseNotes>
-
-    </PropertyGroup>
-
+  <PropertyGroup Condition=" '$(CakeBuild)' == 'true' ">
+    <SolutionDir>$([System.IO.Path]::GetDirectoryName($([System.IO.Path]::GetDirectoryName($(MSBuildThisFileDirectory)))))\</SolutionDir>
+  </PropertyGroup>
+  <!-- When not building from the CI, assemblies do not have any AssemblyInfo attributes. -->
+  <PropertyGroup Condition=" '$(CakeBuild)' != 'true' ">
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+  </PropertyGroup>
+  <PropertyGroup>
+    <!-- Standard properties (no strong naming). -->
+    <RepositoryType>git</RepositoryType>
+    <!-- Signature-Code standard properties. -->
+    <Authors>Signature-Code</Authors>
+    <Company>Signature-Code</Company>
+    <!-- Properties that are solution dependent. -->
+    <Copyright>Copyright Signature-Code 2012-$([System.DateTime]::UtcNow.ToString("yyyy"))</Copyright>
+    <ProductName>CK-Framework</ProductName>
+    <PackageLicenseUrl>https://github.com/SimpleGitVersion/CodeCake/blob/master/LICENSE.txt</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/SimpleGitVersion/CodeCake</PackageProjectUrl>
+    <PackageIconUrl>https://raw.githubusercontent.com/SimpleGitVersion/CodeCake/blob/master/CodeCake.png</PackageIconUrl>
+    <RepositoryUrl>https://github.com/SimpleGitVersion/CodeCake</RepositoryUrl>
+    <PackageReleaseNotes>https://github.com/SimpleGitVersion/CodeCake/releases</PackageReleaseNotes>
+  </PropertyGroup>
+  <!--<SourceLink>: is enabled only for Cake build. -->
+  <PropertyGroup Condition=" '$(CakeBuild)' == 'true' ">
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
+</PropertyGroup>
+  <ItemGroup Condition=" '$(CakeBuild)' == 'true' ">
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0-beta-63127-02" PrivateAssets="All" />
+</ItemGroup>
+  <!--</SourceLink>-->
 </Project>
