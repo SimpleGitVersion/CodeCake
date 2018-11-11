@@ -170,7 +170,7 @@ namespace CodeCake
                     {
                         if( key != null )
                         {
-                            var envVars = RijndaelCrypt.DecryptValues( System.IO.File.ReadAllText( "CodeCakeBuilderKeyVault.txt" ), key );
+                            var envVars = KeyVault.DecryptValues( System.IO.File.ReadAllText( "CodeCakeBuilderKeyVault.txt" ), key );
                             foreach( var e in envVars )
                             {
                                 logger.Information( $"Environment varaible {e.Key} set from key vault." );
