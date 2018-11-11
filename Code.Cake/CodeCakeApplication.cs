@@ -162,6 +162,28 @@ namespace CodeCake
                 CodeCakeHost._injectedActualHost = new BuildScriptHost( engine, context );
                 CodeCakeHost c = (CodeCakeHost)Activator.CreateInstance( choosenBuild.Type );
 
+                if( System.IO.File.Exists( "CodeCakeBuilderKeyVault.txt" ) )
+                {
+                    logger.Information( "Reading environment variables from CodeCakeBuilderKeyVault.txt file." );
+                    string key = context.InteractiveEnvironmentVariable( "CODECAKEBUILDER_SECRET_KEY", setCache: true );
+                    try
+                    {
+                        if( key != null )
+                        {
+                            var envVars = RijndaelCrypt.DecryptValues( System.IO.File.ReadAllText( "CodeCakeBuilderKeyVault.txt" ), key );
+                            foreach( var e in envVars )
+                            {
+                                logger.Information( $"Environment varaible {e.Key} set from key vault." );
+                                Environment.SetEnvironmentVariable( e.Key, e.Value );
+                            }
+                        }
+                    }
+                    catch( Exception ex )
+                    {
+                        logger.Warning( $"Error while reading key vault values: {ex.Message}." );
+                    }
+                }
+
                 var target = context.Arguments.GetArgument( "target" ) ?? "Default";
                 var execSettings = new ExecutionSettings().SetTarget( target );
                 var exclusiveTargetOptional = context.Arguments.HasArgument( "exclusiveOptional" );
