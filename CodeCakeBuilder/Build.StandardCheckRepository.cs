@@ -159,7 +159,7 @@ namespace CodeCake
                 // Creating the right remote feed.
                 if( !isLocalCIRelease )
                 {
-                    result.Feeds.Add( new SignatureVSTSFeed() );
+                    result.Feeds.Add( new SignatureVSTSFeed( "Signature-OpenSource", "Default" ) );
                 }
             }
 

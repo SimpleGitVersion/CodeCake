@@ -1,3 +1,4 @@
+
 version: build{build}
 image: Visual Studio 2017
 clone_folder: C:\CK-World\SimpleGitVersion\CodeCake
@@ -6,11 +7,9 @@ branches:
     - master
     - develop
 environment:
-  AZURE_FEED_PAT:
-    secure: MOjOpNMfab3UseEjZW3bGL6+7uXkbmExMOLMn2Mg+61uUO0qdrSZ28DsChFgR60/Huc+D2bcJ/GXP4CB8Cb8Vg==
-  VSS_NUGET_EXTERNAL_FEED_ENDPOINTS:
-    secure: Nz3VB+UKkzYqapOqgvXXK0wAQkcbjlc7sjrwhYTA7zZ5MdEedplC/poHzeJh2jLFi/qniofrG9Pe8qz8l/CV2mK/1F8vPXuo7csnGxeuR27I9qKPDZncV7VtCuKHDL7DRDiQKyua1ZP5ZlVLsVmNhuQ/wc7s3zvE3Kk4a7pN/qR80fs1ZTGBKxqMrNVIACkkZq8dICYk4cko/SO9DUKyw+hvA99ehzlYcq/C9PISrBnAqAEwKUaCSe9/1SaS7jEBUwAJZbwSjqKuorPeC1hgQCkCiCRlguru/7/3c8IcoGNu9k5yGdIciy7OYNcVeqXgrLsRJjRfiJb4Ch6HsL4x+A==
+  CODECAKEBUILDER_SECRET_KEY:
+    secure: ks+QpMhDl8xJnpAmU4OHdfh11TE+fwNBj4PvMAKrPGsJnNjXcKgXtgAyJo77SJBi
 build_script:
   - dotnet run --project CodeCakeBuilder -nointeraction
 test: off
-install: 'ps: ./CodeCakeBuilder/InstallCredentialProvider.ps1 - AddNetfx'
+install: 'ps: ./CodeCakeBuilder/InstallCredentialProvider.ps1'

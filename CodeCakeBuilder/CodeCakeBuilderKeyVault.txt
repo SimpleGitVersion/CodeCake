@@ -1,0 +1,4 @@
+-- Version: 1
+-- Keys below can be removed if needed.
+AZURE_FEED_SIGNATURE_OPENSOURCE_PAT
+ > C0r9OabEQLOPnpzWLCjukuL5ZnpjeIbTMWaUbolPkQucm/jAdNLWOIw9NIGuy+8p7TPRXre+3xc6h0TI1vwAxCBLBL9f142dp3ZnhGxf0vFXhYYwKMKM4S3F0cl7LSO1
