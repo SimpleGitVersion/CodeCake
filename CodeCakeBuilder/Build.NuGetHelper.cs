@@ -1,5 +1,4 @@
 using Cake.Common.Diagnostics;
-using Cake.Common.Solution;
 using Cake.Core;
 using CK.Text;
 using CSemVer;
@@ -13,7 +12,6 @@ using NuGet.Versioning;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading;
@@ -565,13 +563,12 @@ namespace CodeCake
                 var basicAuth = Convert.ToBase64String( ASCIIEncoding.ASCII.GetBytes( ":" + ctx.InteractiveEnvironmentVariable( SecretKeyName ) ) );
                 foreach( var p in packages )
                 {
-                    foreach( var view in GetViewNames( p.Version ) )
+                    foreach( var view in p.Version.PackageQuality.GetLabels() )
                     {
                         using( HttpRequestMessage req = new HttpRequestMessage( HttpMethod.Post, $"https://pkgs.dev.azure.com/{Organization}/_apis/packaging/feeds/{FeedName}/nuget/packagesBatch?api-version=5.0-preview.1" ) )
                         {
-
                             req.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue( "Basic", basicAuth );
-                            var body = GetPromotionJSONBody( p.PackageId, p.PackageIdentity.Version.ToString(), view );
+                            var body = GetPromotionJSONBody( p.PackageId, p.PackageIdentity.Version.ToString(), view.ToString() );
                             req.Content = new StringContent( body, Encoding.UTF8, "application/json" );
                             using( var m = await NuGetHelper.SharedHttpClient.SendAsync( req ) )
                             {
@@ -588,18 +585,6 @@ namespace CodeCake
                         }
                     }
                 }
-            }
-
-            IEnumerable<string> GetViewNames( SVersion v )
-            {
-                yield return "CI";
-                if( v.IsLatestLabel )
-                {
-                    yield return "Latest";
-                    yield return "Preview";
-                    if( v.IsStableLabel ) yield return "Stable";
-                }
-                else if( v.IsPreviewLabel ) yield return "Preview";
             }
 
             string GetPromotionJSONBody( string packageName, string packageVersion, string viewId, bool npm = false )
