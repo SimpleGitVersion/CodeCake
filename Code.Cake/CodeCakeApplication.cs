@@ -162,7 +162,7 @@ namespace CodeCake
                 CodeCakeHost._injectedActualHost = new BuildScriptHost( engine, context );
                 CodeCakeHost c = (CodeCakeHost)Activator.CreateInstance( choosenBuild.Type );
 
-                if( System.IO.File.Exists( "CodeCakeBuilderKeyVault.txt" ) )
+                if( System.IO.File.Exists( "CodeCakeBuilder/CodeCakeBuilderKeyVault.txt" ) )
                 {
                     logger.Information( "Reading environment variables from CodeCakeBuilderKeyVault.txt file." );
                     string key = context.InteractiveEnvironmentVariable( "CODECAKEBUILDER_SECRET_KEY", setCache: true );
