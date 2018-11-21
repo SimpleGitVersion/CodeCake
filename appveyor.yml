@@ -1,3 +1,4 @@
+
 version: build{build}
 image: Visual Studio 2017
 clone_folder: C:\CK-World\SimpleGitVersion\CodeCake
@@ -6,12 +7,9 @@ branches:
     - master
     - develop
 environment:
-  MYGET_PREVIEW_API_KEY:
-    secure: CfEqNYjhrGX9DyalZ4jcadzJ/x8q25GulMCbZQDRRs+XetfHn2AEP79OJXE1wSJ8
-  MYGET_CI_API_KEY:
-    secure: z3ZFnSM3FPCaJYkLhqjZmFTCw1Wf1hmRznQ0/UfxY/5haxctmymvFhh+PTz+/eHw
-  MYGET_RELEASE_API_KEY:
-    secure: BmENGV1y8uv5cLhMhwpoDLwQiLJh4C66c53+FW8FuuVfu5Lf4Ac6NvSuqO/1MbPm
+  CODECAKEBUILDER_SECRET_KEY:
+    secure: ks+QpMhDl8xJnpAmU4OHdfh11TE+fwNBj4PvMAKrPGsJnNjXcKgXtgAyJo77SJBi
 build_script:
   - dotnet run --project CodeCakeBuilder -nointeraction
 test: off
+install: 'ps: ./CodeCakeBuilder/InstallCredentialProvider.ps1'

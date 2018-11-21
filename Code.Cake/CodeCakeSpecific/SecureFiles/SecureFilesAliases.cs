@@ -25,7 +25,7 @@ namespace Cake.Common
             string extension = file.GetExtension();
             if( extension == "enc" ) extension = file.GetFilenameWithoutExtension().GetExtension();
             var f = new TemporaryFile( extension );
-            RijndaelCrypt.Decrypt( file.FullPath, f.Path, secret );
+            KeyVault.Decrypt( file.FullPath, f.Path, secret );
             return f;
         }
 
@@ -40,7 +40,7 @@ namespace Cake.Common
         [CakeMethodAlias]
         public static void SecureFileCrypt( this ICakeContext context, FilePath file, FilePath encryptedFile, string secret )
         {
-            RijndaelCrypt.Encrypt( file.FullPath, encryptedFile.FullPath, secret );
+            KeyVault.Encrypt( file.FullPath, encryptedFile.FullPath, secret );
         }
     }
 }

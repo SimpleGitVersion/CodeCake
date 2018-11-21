@@ -15,11 +15,9 @@ namespace CodeCake
         {
             var settings = new DotNetCorePackSettings().AddVersionArguments( gitInfo, c =>
             {
-                // Waiting for netcore 2.1 (https://github.com/dotnet/cli/issues/5331).
-                // Setting nobuild and BuildProjectReferences=false
-                // IsPackable=true is required for Tests package. Without this Pack on Tests projects does not generate nupkg.
-                c.ArgumentCustomization += args => args.Append( "/p:IsPackable=true" )
-                                                       .Append( "/p:BuildProjectReferences=false" );
+                // IsPackable=true is required for Tests package. Without this Pack on Tests projects
+                // does not generate nupkg.
+                c.ArgumentCustomization += args => args.Append( "/p:IsPackable=true" );
                 c.NoBuild = true;
                 c.IncludeSymbols = true;
                 c.Configuration = configuration;
