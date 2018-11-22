@@ -16,6 +16,8 @@
     <Authors>Signature Code</Authors>
     <Copyright>Copyright Invenietis 2007-$([System.DateTime]::UtcNow.ToString("yyyy"))</Copyright>
     <RepositoryType>git</RepositoryType>
+    <!--Removes annoying Pack warning: The package version ... uses SemVer 2.0.0 or components of SemVer 1.0.0 that are not supported on legacy clients...-->
+    <NoWarn>NU5105</NoWarn>
   </PropertyGroup>
   <!--</StandardProperties>-->
 
