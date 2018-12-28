@@ -189,9 +189,10 @@ new SignatureVSTSFeed( "Signature-OpenSource", "Default" )
 
                 // Creating the right remote feed.
                 if( !result.IsLocalCIRelease
-                    && Cake.ReadInteractiveOption( "PushToRemote", "Push to Remote feeds?", 'Y', 'N' ) == 'Y' )
+                    && (Cake.InteractiveMode() == InteractiveMode.NoInteraction
+                        || Cake.ReadInteractiveOption( "PushToRemote", "Push to Remote feeds?", 'Y', 'N' ) == 'Y') )
                 {
-                    result.PushToRemote = true; 
+                    result.PushToRemote = true;
                     foreach( var f in CheckRepositoryInfo.GetTargetRemoteFeeds() )
                     {
                         Cake.Information( $"Adding NuGet remote feed: {f.Name} => {f.Url}" );
