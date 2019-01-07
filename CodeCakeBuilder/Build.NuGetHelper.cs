@@ -145,7 +145,9 @@ namespace CodeCake
                 _settings = Settings.LoadDefaultSettings( Environment.CurrentDirectory );
                 _sourceProvider = new PackageProviderProxy( _settings );
                 _vstsFeeds = new List<VSTSFeed>();
-                _sourceCache = new SourceCacheContext();
+                // Setting "NoCache" (?) here is required to be able to retry a push after a
+                // failure. Without it, the PUT is canceled.
+                _sourceCache = new SourceCacheContext().WithRefreshCacheTrue();
                 _providers = new List<Lazy<INuGetResourceProvider>>();
                 _providers.AddRange( Repository.Provider.GetCoreV3() );
                 SharedHttpClient = new HttpClient();
@@ -200,7 +202,7 @@ namespace CodeCake
                     }
                     InitializeVSTSEnvironment( ctx );
                     _logger = new Logger( ctx );
-                    var credProviders = new AsyncLazy<IEnumerable<ICredentialProvider>>( async () => await GetCredentialProvidersAsync( _sourceProvider, _logger ) );
+                    var credProviders = new AsyncLazy<IEnumerable<ICredentialProvider>>( async () => await GetCredentialProvidersAsync( _logger ) );
                     HttpHandlerResourceV3.CredentialService = new Lazy<ICredentialService>(
                         () => new CredentialService(
                             providers: credProviders,
@@ -241,7 +243,7 @@ namespace CodeCake
                 Environment.SetEnvironmentVariable( "VSS_NUGET_EXTERNAL_FEED_ENDPOINTS", b.ToString() );
             }
 
-            static async Task<IEnumerable<ICredentialProvider>> GetCredentialProvidersAsync( IPackageSourceProvider sourceProvider, ILogger logger )
+            static async Task<IEnumerable<ICredentialProvider>> GetCredentialProvidersAsync( ILogger logger )
             {
                 var providers = new List<ICredentialProvider>();
                 var securePluginProviders = await new SecurePluginCredentialProviderBuilder( pluginManager: PluginManager.Instance, canShowDialog: false, logger: logger ).BuildAllAsync();
@@ -347,6 +349,7 @@ namespace CodeCake
                             return;
                         }
                     }
+                    ctx.Information( $"Pushing packages to '{Name}' => '{Url}'." );
                     var logger = InitializeAndGetLogger( ctx );
                     var updater = await _updater;
                     foreach( var package in packages )

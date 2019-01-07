@@ -25,8 +25,9 @@ namespace CodeCake
             public static IEnumerable<NuGetHelper.Feed> GetTargetRemoteFeeds()
             {
                 return new NuGetHelper.Feed[]{
-                    new SignatureVSTSFeed( "Signature-OpenSource", "Default" )
-                };
+
+new SignatureVSTSFeed( "Signature-OpenSource", "Default" )
+};
             }
 
             public CheckRepositoryInfo( SimpleRepositoryInfo gitInfo, IEnumerable<SolutionProject> projectsToPublish )
@@ -62,9 +63,14 @@ namespace CodeCake
             public string FilePartVersion => Version.NormalizedText;
 
             /// <summary>
-            /// Gets whether this is a blank build.
+            /// Gets whether this is a purely local build.
             /// </summary>
             public bool IsLocalCIRelease { get; set; }
+
+            /// <summary>
+            /// Gets whether remote feeds, stores or any other external repositories should receive atrifacts.
+            /// </summary>
+            public bool PushToRemote { get; set; }
 
             /// <summary>
             /// Gets all the NuGet packages to publish. This is a simple projection of
@@ -122,7 +128,7 @@ namespace CodeCake
                                         && (gitInfo.PreReleaseName.Length == 0 || gitInfo.PreReleaseName == "rc")
                                         ? "Release"
                                         : "Debug";
-
+            // By default:
             if( !gitInfo.IsValid )
             {
                 if( Cake.InteractiveMode() != InteractiveMode.NoInteraction
@@ -147,27 +153,51 @@ namespace CodeCake
             else
             {
                 // gitInfo is valid: it is either ci or a release build. 
-                // Local releases must not be pushed on any remote and are copied to LocalFeed/Local
-                // feed (if LocalFeed/ directory above exists).
-                bool isLocalCIRelease = gitInfo.Info.FinalSemVersion.Prerelease.EndsWith( ".local" );
-                var localFeed = Cake.FindDirectoryAbove( "LocalFeed" );
-                if( localFeed != null && isLocalCIRelease )
+                // If a /LocalFeed/ directory exists above, we publish the packages in it.
+                var localFeedRoot = Cake.FindDirectoryAbove( "LocalFeed" );
+                if( localFeedRoot != null )
                 {
-                    localFeed = System.IO.Path.Combine( localFeed, "Local" );
-                    System.IO.Directory.CreateDirectory( localFeed );
+                    var v = gitInfo.Info.FinalSemVersion;
+                    if( v.AsCSVersion == null )
+                    {
+                        if( v.Prerelease.EndsWith( ".local" ) )
+                        {
+                            // Local releases must not be pushed on any remote and are copied to LocalFeed/Local
+                            // feed (if LocalFeed/ directory above exists).
+                            result.IsLocalCIRelease = true;
+                            result.LocalFeedPath = System.IO.Path.Combine( localFeedRoot, "Local" );
+                        }
+                        else
+                        {
+                            // CI build versions are routed to LocalFeed/CI
+                            result.LocalFeedPath = System.IO.Path.Combine( localFeedRoot, "CI" );
+                        }
+                    }
+                    else
+                    {
+                        // Relaease or prerelease go to LocalFeed/Release
+                        result.LocalFeedPath = System.IO.Path.Combine( localFeedRoot, "Release" );
+                    }
+                    System.IO.Directory.CreateDirectory( result.LocalFeedPath );
                 }
-                result.IsLocalCIRelease = isLocalCIRelease;
-                result.LocalFeedPath = localFeed;
 
-                if( localFeed != null )
+                if( result.LocalFeedPath != null )
                 {
-                    result.Feeds.Add( new LocalFeed( localFeed ) );
+                    Cake.Information( $"Adding NuGet local feed: {result.LocalFeedPath}" );
+                    result.Feeds.Add( new LocalFeed( result.LocalFeedPath ) );
                 }
 
                 // Creating the right remote feed.
-                if( !isLocalCIRelease )
+                if( !result.IsLocalCIRelease
+                    && (Cake.InteractiveMode() == InteractiveMode.NoInteraction
+                        || Cake.ReadInteractiveOption( "PushToRemote", "Push to Remote feeds?", 'Y', 'N' ) == 'Y') )
                 {
-                    result.Feeds.AddRange( CheckRepositoryInfo.GetTargetRemoteFeeds() );
+                    result.PushToRemote = true;
+                    foreach( var f in CheckRepositoryInfo.GetTargetRemoteFeeds() )
+                    {
+                        Cake.Information( $"Adding NuGet remote feed: {f.Name} => {f.Url}" );
+                        result.Feeds.Add( f );
+                    }
                 }
             }
 
