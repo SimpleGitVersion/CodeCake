@@ -122,7 +122,7 @@ namespace CodeCake
             MutableCakeEnvironment environment = new MutableCakeEnvironment( platform, runtime, appRoot );
             IGlobber globber = new Globber( fileSystem, environment );
             environment.Initialize( globber );
-            IProcessRunner processRunner = new ProcessRunner( environment, logger );
+
             IRegistry windowsRegistry = new WindowsRegistry();
             // Parse options.
             var argumentParser = new ArgumentParser( logger, fileSystem );
@@ -134,6 +134,7 @@ namespace CodeCake
             IToolResolutionStrategy toolStrategy = new ToolResolutionStrategy( fileSystem, environment, globber, configuration );
             IToolLocator locator = new ToolLocator( environment, toolRepo, toolStrategy );
             IToolLocator toolLocator = new ToolLocator( environment, toolRepo, toolStrategy  );
+            IProcessRunner processRunner = new ProcessRunner( fileSystem, environment, logger, toolLocator, configuration );
             logger.SetVerbosity( options.Verbosity );
             ICakeArguments arguments = new CakeArguments(options.Arguments);
             var context = new CakeContext( fileSystem, environment, globber, logger, arguments, processRunner, windowsRegistry, locator, dataService );

@@ -5,10 +5,10 @@
     <LangVersion>7.2</LangVersion>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="NuGet.Protocol" Version="4.8.0" />
+    <PackageReference Include="NuGet.Protocol" Version="4.9.2" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="NuGet.Credentials" Version="4.8.0" />
+    <PackageReference Include="NuGet.Credentials" Version="4.9.2" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Code.Cake\Code.Cake.csproj" />
