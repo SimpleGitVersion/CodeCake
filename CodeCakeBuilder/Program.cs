@@ -11,7 +11,7 @@ namespace CodeCake
         /// Check of this argument uses <see cref="StringComparer.OrdinalIgnoreCase"/>.
         /// </summary>
         const string SolutionDirectoryIsCurrentDirectoryParameter = "SolutionDirectoryIsCurrentDirectory";
-        
+
         /// <summary>
         /// CodeCakeBuilder entry point. This is a default, simple, implementation that can 
         /// be extended as needed.
