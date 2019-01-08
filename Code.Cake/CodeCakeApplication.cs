@@ -43,7 +43,7 @@ namespace CodeCake
         /// </param>
         /// <param name="solutionDirectory">
         /// Solution directory: will become the <see cref="ICakeEnvironment.WorkingDirectory"/>.
-        /// When null, we consider the <see cref="AppContext.BaseDirectory"/> to be running in "Solution/Builder/bin/[Configuration}/[targetFramework]" folder:
+        /// When null, we consider the <see cref="AppContext.BaseDirectory"/> to be running in "Solution/Builder/bin/[Configuration]/[targetFramework]" folder:
         /// we compute the solution directory by looking for the /bin/ folder and escalating 2 levels.
         /// </param>
         public CodeCakeApplication( IEnumerable<Assembly> codeContainers = null, string solutionDirectory = null )
@@ -109,7 +109,7 @@ namespace CodeCake
         /// <param name="args">Arguments.</param>
         /// <param name="appRoot">Application root folder</param>
         /// <returns>The result of the run.</returns>
-        public RunResult Run( string[] args, string appRoot = null)
+        public RunResult Run( IEnumerable<string> args, string appRoot = null)
         {
             var console = new CakeConsole();
             var logger = new SafeCakeLog( console );
@@ -146,6 +146,7 @@ namespace CodeCake
             }
 
             // Set the working directory: the solution directory.
+            logger.Information( $"Working in Solution directory: '{_solutionDirectory}'." );
             environment.WorkingDirectory = new DirectoryPath( _solutionDirectory );
 
             // Adds additional paths from chosen build.
@@ -158,11 +159,12 @@ namespace CodeCake
 
             try
             {
+                SetEnvironmentVariablesFromCodeCakeBuilderKeyVault( logger, context );
+
                 // Instanciates the script object.
                 CodeCakeHost._injectedActualHost = new BuildScriptHost( engine, context );
                 CodeCakeHost c = (CodeCakeHost)Activator.CreateInstance( choosenBuild.Type );
 
-                SetEnvironmentVariablesFromCodeCakeBuilderKeyVault( logger, context );
 
                 var target = context.Arguments.GetArgument( "target" ) ?? "Default";
                 var execSettings = new ExecutionSettings().SetTarget( target );
