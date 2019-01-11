@@ -1,11 +1,16 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net461</TargetFramework>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
     <OutputType>Exe</OutputType>
+    <LangVersion>7.2</LangVersion>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="NuGet.Protocol" Version="4.9.2" />
+    <PackageReference Include="NuGet.Credentials" Version="4.9.2" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\Code.Cake\Code.Cake.csproj" />
-    <PackageReference Include="CK.Text" Version="7.0.1-C0048-develop" />
-    <PackageReference Include="SimpleGitVersion.Cake" Version="0.35.1-C0018-develop" />
+    <PackageReference Include="CK.Text" Version="8.0.0" />
+    <PackageReference Include="SimpleGitVersion.Cake" Version="0.37.0" />
   </ItemGroup>
 </Project>
