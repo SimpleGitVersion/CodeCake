@@ -124,6 +124,8 @@ namespace CodeCake
 
                 bool IPackageSourceProvider.IsPackageSourceEnabled( PackageSource source ) => true;
 
+                bool IPackageSourceProvider.IsPackageSourceEnabled( string name ) => true;
+
                 void IPackageSourceProvider.DisablePackageSource( PackageSource source )
                 {
                     throw new NotSupportedException( "Should not be called in this scenario." );
@@ -135,6 +137,35 @@ namespace CodeCake
                 }
 
                 void IPackageSourceProvider.SavePackageSources( IEnumerable<PackageSource> sources )
+                {
+                    throw new NotSupportedException( "Should not be called in this scenario." );
+                }
+
+                PackageSource IPackageSourceProvider.GetPackageSourceByName( string name ) => _sources.Value.FirstOrDefault( s => s.Name == name );
+
+                PackageSource IPackageSourceProvider.GetPackageSourceBySource( string source ) => _sources.Value.FirstOrDefault( s => s.Source == source );
+
+                void IPackageSourceProvider.RemovePackageSource( string name )
+                {
+                    throw new NotSupportedException( "Should not be called in this scenario." );
+                }
+
+                void IPackageSourceProvider.EnablePackageSource( string name )
+                {
+                    throw new NotSupportedException( "Should not be called in this scenario." );
+                }
+
+                void IPackageSourceProvider.DisablePackageSource( string name )
+                {
+                    throw new NotSupportedException( "Should not be called in this scenario." );
+                }
+
+                void IPackageSourceProvider.UpdatePackageSource( PackageSource source, bool updateCredentials, bool updateEnabled )
+                {
+                    throw new NotSupportedException( "Should not be called in this scenario." );
+                }
+
+                void IPackageSourceProvider.AddPackageSource( PackageSource source )
                 {
                     throw new NotSupportedException( "Should not be called in this scenario." );
                 }
