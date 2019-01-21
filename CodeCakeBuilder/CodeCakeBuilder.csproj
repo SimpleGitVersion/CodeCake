@@ -10,7 +10,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Code.Cake\Code.Cake.csproj" />
-    <PackageReference Include="CK.Text" Version="8.0.0" />
-    <PackageReference Include="SimpleGitVersion.Cake" Version="0.37.0" />
+    <PackageReference Include="CK.Text" Version="8.0.2" />
+    <PackageReference Include="SimpleGitVersion.Cake" Version="0.37.3" />
   </ItemGroup>
 </Project>

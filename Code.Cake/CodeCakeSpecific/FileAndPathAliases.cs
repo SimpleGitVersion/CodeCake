@@ -1,4 +1,4 @@
-﻿using Cake.Core;
+using Cake.Core;
 using Cake.Core.Annotations;
 using System;
 using System.Collections.Generic;
@@ -42,6 +42,7 @@ namespace CodeCake
             if( start == null ) throw new ArgumentNullException( "start" );
             if( directoryName == null ) throw new ArgumentNullException( "directortyName" );
             string p = Path.GetDirectoryName( start );
+            if( String.IsNullOrEmpty( p ) ) return null;
             string pF;
             while( !Directory.Exists( pF = Path.Combine( p, directoryName ) ) )
             {
