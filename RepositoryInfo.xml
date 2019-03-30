@@ -6,5 +6,5 @@
   </Branches>
   <StartingVersionForCSemVer>v0.6.0-rc</StartingVersionForCSemVer>
   <!-- <Debug IgnoreDirtyWorkingFolder="true"/> -->
-  <Debug IgnoreDirtyWorkingFolder="true" />
+
 </RepositoryInfo>
