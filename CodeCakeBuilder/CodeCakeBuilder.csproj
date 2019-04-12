@@ -5,12 +5,15 @@
     <LangVersion>7.2</LangVersion>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="Cake.Npm" Version="0.16.0" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="NuGet.Protocol" Version="4.9.2" />
     <PackageReference Include="NuGet.Credentials" Version="4.9.2" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Code.Cake\Code.Cake.csproj" />
-    <PackageReference Include="CK.Text" Version="8.0.3--0014-develop" />
-    <PackageReference Include="SimpleGitVersion.Cake" Version="0.37.4--0012-develop" />
+    <PackageReference Include="CK.Text" Version="8.0.3--0017-develop" />
+    <PackageReference Include="SimpleGitVersion.Cake" Version="0.37.4--0015-develop" />
   </ItemGroup>
 </Project>
