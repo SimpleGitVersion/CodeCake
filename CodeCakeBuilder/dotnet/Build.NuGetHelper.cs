@@ -94,14 +94,7 @@ namespace CodeCake
                 /// <returns></returns>
                 public IEnumerable<PackageSource> LoadPackageSources() => _sources.Value;
 
-                bool IPackageSourceProvider.IsPackageSourceEnabled( PackageSource source ) => true;
-
                 bool IPackageSourceProvider.IsPackageSourceEnabled( string name ) => true;
-
-                void IPackageSourceProvider.DisablePackageSource( PackageSource source )
-                {
-                    throw new NotSupportedException( "Should not be called in this scenario." );
-                }
 
                 void IPackageSourceProvider.SaveActivePackageSource( PackageSource source )
                 {
