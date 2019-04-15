@@ -95,7 +95,6 @@ namespace CodeCake
             Task( "Clean" )
                 .Does( () =>
                 {
-                    Cake.TerminateWithSuccess( "Pouet" );
                     Cake.CleanDirectories( projects.Select( p => p.Path.GetDirectory().Combine( "bin" ) ) );
                     Cake.CleanDirectories( releasesDir );
                 } );

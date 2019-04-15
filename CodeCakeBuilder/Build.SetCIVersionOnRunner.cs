@@ -43,7 +43,7 @@ namespace CodeCake
                 //damned, we can't tag the pipeline/job
             }
             ITFBuildProvider vsts = Cake.TFBuild();
-            if( vsts.IsRunningOnVSTS || vsts.IsRunningOnTFS )
+            if( vsts.IsRunningOnAzurePipelinesHosted || vsts.IsRunningOnAzurePipelines )
             {
                 VSTSUpdateBuildVersion( checkInfo.GitInfo );
             }
