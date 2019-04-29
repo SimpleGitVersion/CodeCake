@@ -1,4 +1,4 @@
-# Invenietis custom .editorconfig
+# Signature-Code .editorconfig
 # See also: https://github.com/dotnet/roslyn/blob/master/src/Workspaces/CSharp/Portable/Formatting/CSharpFormattingOptions.cs
 # 20170522
 
@@ -10,6 +10,9 @@ indent_style = space
 indent_size = 2
 insert_final_newline = true
 trim_trailing_whitespace = true
+
+[*.sql]
+indent_size = 4
 
 [*.cs]
 end_of_line = crlf

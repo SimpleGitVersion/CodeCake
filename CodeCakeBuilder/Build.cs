@@ -38,26 +38,20 @@ namespace CodeCake
         {
             Cake.Log.Verbosity = Verbosity.Diagnostic;
 
-            const string solutionName = "CodeCake";
-            const string solutionFileName = solutionName + ".sln";
-
-            var releasesDir = Cake.Directory( "CodeCakeBuilder/Releases" );
-            Cake.CreateDirectory( releasesDir );
+            var solutionFileName = Cake.Environment.WorkingDirectory.GetDirectoryName() + ".sln";
 
             var projects = Cake.ParseSolution( solutionFileName )
                                        .Projects
-                                       .Where( p => !(p is SolutionFolder)
-                                                    && p.Name != "CodeCakeBuilder" );
+                                       .Where( p => !(p is SolutionFolder) && p.Name != "CodeCakeBuilder" );
 
-            // We do not publish .Tests projects for this solution.
-            var projectsToPublish = projects.Where( p => !p.Path.Segments.Contains( "Tests" ) );
+            // We do not generate NuGet packages for /Tests projects for this solution.
+            var projectsToPublish = projects
+                                        .Where( p => !p.Path.Segments.Contains( "Tests" ) );
 
-            // The SimpleRepositoryInfo should be computed once and only once.
             SimpleRepositoryInfo gitInfo = Cake.GetSimpleRepositoryInfo();
-
-            //
-            CheckRepositoryInfo globalInfo = null;
-            NuGetRepositoryInfo nugetInfo = null;
+            StandardGlobalInfo globalInfo = CreateStandardGlobalInfo( gitInfo )
+                                                .AddNuGet( projectsToPublish )
+                                                .SetCIBuildTag();
 
             Setup( context =>
             {
@@ -82,21 +76,17 @@ namespace CodeCake
             Task( "Check-Repository" )
                 .Does( () =>
                 {
-                    globalInfo = StandardCheckRepositoryWithoutNuget( gitInfo );
-                    nugetInfo = new NuGetRepositoryInfo( Cake, globalInfo, projectsToPublish );
-                    globalInfo.AddAndInitRepository( nugetInfo );
-
-                    if( globalInfo.ShouldStop )
-                    {
-                        Cake.TerminateWithSuccess( "All packages from this commit are already available. Build skipped." );
-                    }
+                    globalInfo.TerminateIfShouldStop();
                 } );
 
             Task( "Clean" )
+                .IsDependentOn( "Check-Repository" )
                 .Does( () =>
                 {
                     Cake.CleanDirectories( projects.Select( p => p.Path.GetDirectory().Combine( "bin" ) ) );
-                    Cake.CleanDirectories( releasesDir );
+                    Cake.CleanDirectories( projects.Select( p => p.Path.GetDirectory().Combine( "obj" ) ) );
+                    Cake.CleanDirectories( globalInfo.ReleasesFolder );
+                    Cake.DeleteFiles( "Tests/**/TestResult*.xml" );
                 } );
 
             // Use N as the first answser: this test takes a looong time (why?)
@@ -151,7 +141,7 @@ namespace CodeCake
                 .IsDependentOn( "AutoTests" )
                 .Does( () =>
                 {
-                    StandardSolutionBuild( solutionFileName, nugetInfo );
+                    StandardSolutionBuild( globalInfo, solutionFileName );
                 } );
 
             Task( "Create-NuGet-Packages" )
@@ -159,7 +149,7 @@ namespace CodeCake
                 .IsDependentOn( "Build" )
                 .Does( () =>
                 {
-                    StandardCreateNuGetPackages( nugetInfo, releasesDir );
+                    StandardCreateNuGetPackages( globalInfo );
                 } );
 
             Task( "Push-NuGet-Packages" )
@@ -167,7 +157,7 @@ namespace CodeCake
                 .WithCriteria( () => gitInfo.IsValid )
                .Does( () =>
                 {
-                    StandardPushNuGetPackages( nugetInfo, releasesDir );
+                    globalInfo.PushArtifacts();
                 } );
 
             Task( "Default" ).IsDependentOn( "Push-NuGet-Packages" );
