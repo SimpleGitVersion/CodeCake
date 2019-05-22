@@ -137,7 +137,17 @@ namespace CodeCake
             IProcessRunner processRunner = new ProcessRunner( fileSystem, environment, logger, toolLocator, configuration );
             logger.SetVerbosity( options.Verbosity );
             ICakeArguments arguments = new CakeArguments(options.Arguments);
-            var context = new CakeContext( fileSystem, environment, globber, logger, arguments, processRunner, windowsRegistry, locator, dataService );
+            var context = new CakeContext(
+                fileSystem,
+                environment,
+                globber,
+                logger,
+                arguments,
+                processRunner,
+                windowsRegistry,
+                locator,
+                dataService,
+                configuration );
 
             CodeCakeBuildTypeDescriptor choosenBuild;
             if( !AvailableBuilds.TryGetValue( options.Script, out choosenBuild ) )
