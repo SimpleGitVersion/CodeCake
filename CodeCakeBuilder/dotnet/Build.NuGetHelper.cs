@@ -168,19 +168,19 @@ namespace CodeCake
                 public void LogError( string data ) { lock( _lock ) _ctx.Error( $"NuGet: {data}" ); }
                 public void LogSummary( string data ) { lock( _lock ) _ctx.Information( $"NuGet: {data}" ); }
                 public void LogInformationSummary( string data ) { lock( _lock ) _ctx.Information( $"NuGet: {data}" ); }
-                public void Log( NuGet.Common.LogLevel level, string data ) { lock( _lock ) _ctx.Information( $"NuGet ({level}): {data}" ); }
-                public Task LogAsync( NuGet.Common.LogLevel level, string data )
+                public void Log( LogLevel level, string data ) { lock( _lock ) _ctx.Information( $"NuGet ({level}): {data}" ); }
+                public Task LogAsync( LogLevel level, string data )
                 {
                     Log( level, data );
                     return System.Threading.Tasks.Task.CompletedTask;
                 }
 
-                public void Log( NuGet.Common.ILogMessage message )
+                public void Log( ILogMessage message )
                 {
                     lock( _lock ) _ctx.Information( $"NuGet ({message.Level}) - Code: {message.Code} - Project: {message.ProjectPath} - {message.Message}" );
                 }
 
-                public Task LogAsync( NuGet.Common.ILogMessage message )
+                public Task LogAsync( ILogMessage message )
                 {
                     Log( message );
                     return System.Threading.Tasks.Task.CompletedTask;

@@ -56,10 +56,9 @@ namespace CodeCake
             /// <returns>The set of remote NuGet feeds (in practice at most one).</returns>
             protected override IEnumerable<ArtifactFeed> GetRemoteFeeds()
             {
-                return new NuGetHelper.NuGetFeed[]{
+                if( GlobalInfo.Version.PackageQuality >= PackageQuality.ReleaseCandidate ) yield return new RemoteFeed( this, "nuget.org", "https://www.nuget.org/api/v2/package", "NUGET_ORG_PUSH_API_KEY" );
+yield return new SignatureVSTSFeed( this, "Signature-OpenSource", "Default" );
 
-new SignatureVSTSFeed( this, "Signature-OpenSource", "Default" )
-};
             }
 
             /// <summary>
