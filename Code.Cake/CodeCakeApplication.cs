@@ -64,7 +64,7 @@ namespace CodeCake
                     solutionDirectory = System.IO.Path.GetDirectoryName( solutionDirectory );
                     if( string.IsNullOrEmpty( solutionDirectory ) )
                     {
-                        throw new ArgumentException( $"Unable to find /bin/ folder in AppContext.BaseDirectory = {AppContext.BaseDirectory}. Please provide a non null solution directory.", nameof(solutionDirectory) );
+                        throw new ArgumentException( $"Unable to find /bin/ folder in AppContext.BaseDirectory = {AppContext.BaseDirectory}. Please provide a non null solution directory.", nameof( solutionDirectory ) );
                     }
                 }
                 solutionDirectory = System.IO.Path.GetDirectoryName( solutionDirectory );
@@ -109,7 +109,7 @@ namespace CodeCake
         /// <param name="args">Arguments.</param>
         /// <param name="appRoot">Application root folder</param>
         /// <returns>The result of the run.</returns>
-        public RunResult Run( IEnumerable<string> args, string appRoot = null)
+        public RunResult Run( IEnumerable<string> args, string appRoot = null )
         {
             var console = new CakeConsole();
             var logger = new SafeCakeLog( console );
@@ -133,10 +133,10 @@ namespace CodeCake
             IToolRepository toolRepo = new ToolRepository( environment );
             IToolResolutionStrategy toolStrategy = new ToolResolutionStrategy( fileSystem, environment, globber, configuration );
             IToolLocator locator = new ToolLocator( environment, toolRepo, toolStrategy );
-            IToolLocator toolLocator = new ToolLocator( environment, toolRepo, toolStrategy  );
+            IToolLocator toolLocator = new ToolLocator( environment, toolRepo, toolStrategy );
             IProcessRunner processRunner = new ProcessRunner( fileSystem, environment, logger, toolLocator, configuration );
             logger.SetVerbosity( options.Verbosity );
-            ICakeArguments arguments = new CakeArguments(options.Arguments);
+            ICakeArguments arguments = new CakeArguments( options.Arguments );
             var context = new CakeContext(
                 fileSystem,
                 environment,
@@ -257,6 +257,10 @@ namespace CodeCake
                             }
                         }
                     }
+                    else
+                    {
+                        logger.Warning( $"Environment variable CODECAKEBUILDER_SECRET_KEY is not set. Cannot open the Key Vault." );
+                    }
                 }
                 catch( Exception ex )
                 {
@@ -269,7 +273,7 @@ namespace CodeCake
         /// <summary>
         /// Gets a mutable dictionary of build objects.
         /// </summary>
-        public IDictionary<string, CodeCakeBuildTypeDescriptor> AvailableBuilds => _builds; 
+        public IDictionary<string, CodeCakeBuildTypeDescriptor> AvailableBuilds => _builds;
 
     }
 }

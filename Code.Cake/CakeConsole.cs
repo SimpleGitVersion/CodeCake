@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Cake.Core;
 
 namespace CodeCake
@@ -31,9 +31,9 @@ namespace CodeCake
         /// </summary>
         /// <param name="format">A composite format string</param>
         /// <param name="arg">An array of objects to write using format.</param>
-        public void Write(string format, params object[] arg)
+        public void Write( string format, params object[] arg )
         {
-            Console.Write(format, arg);
+            Console.Write( format, arg );
         }
 
         /// <summary>
@@ -43,9 +43,9 @@ namespace CodeCake
         /// </summary>
         /// <param name="format">A composite format string</param>
         /// <param name="arg">An array of objects to write using format.</param>
-        public void WriteLine(string format, params object[] arg)
+        public void WriteLine( string format, params object[] arg )
         {
-            Console.WriteLine(format, arg);
+            Console.WriteLine( format, arg );
         }
 
 
