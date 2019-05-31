@@ -1,7 +1,7 @@
 
 version: build{build}
 image: Visual Studio 2017
-clone_folder: C:\CK-World\SimpleGitVersion\CodeCake
+clone_folder: C:\CKli-World\SimpleGitVersion\CodeCake
 branches:
   only:
     - master

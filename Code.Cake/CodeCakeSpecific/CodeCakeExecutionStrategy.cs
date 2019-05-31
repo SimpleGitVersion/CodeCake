@@ -90,16 +90,6 @@ namespace CodeCake
         }
 
         /// <summary>
-        /// Executes the error handler.
-        /// </summary>
-        /// <param name="action">The action.</param>
-        /// <param name="exception">The exception.</param>
-        public void HandleErrors( Action<Exception> action, Exception exception )
-        {
-            _default.HandleErrors( action, exception );
-        }
-
-        /// <summary>
         /// Invokes the finally handler.
         /// </summary>
         /// <param name="action">The action.</param>
@@ -126,6 +116,17 @@ namespace CodeCake
         public void PerformTaskTeardown( Action<ITaskTeardownContext> action, ITaskTeardownContext taskTeardownContext )
         {
             _default.PerformTaskTeardown( action, taskTeardownContext );
+        }
+
+        /// <summary>
+        /// Executes the error handler.
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <param name="exception">The exception.</param>
+        /// <param name="context">The context.</param>
+        public void HandleErrors( Action<Exception, ICakeContext> action, Exception exception, ICakeContext context )
+        {
+            _default.HandleErrors( action, exception, context );
         }
     }
 }

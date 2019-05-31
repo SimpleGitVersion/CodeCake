@@ -1,6 +1,7 @@
 using Cake.Common.Diagnostics;
 using Cake.Core;
 using CK.Text;
+using CodeCake.Abstractions;
 using CSemVer;
 using NuGet.Common;
 using NuGet.Configuration;
@@ -8,6 +9,7 @@ using NuGet.Credentials;
 using NuGet.Packaging.Core;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.Plugins;
 using NuGet.Versioning;
 using System;
 using System.Collections.Generic;
@@ -21,36 +23,7 @@ namespace CodeCake
 {
     public partial class Build
     {
-        /// <summary>
-        /// Package with both PackageIdentity (from NuGet) and SVersion (from CSemVer).
-        /// </summary>
-        struct SimplePackageId
-        {
-            /// <summary>
-            /// Gets the NuGet PackageIdentity object.
-            /// </summary>
-            public readonly PackageIdentity PackageIdentity;
-
-            /// <summary>
-            /// Gets the SVersion of the package.
-            /// </summary>
-            public readonly SVersion Version;
-
-            /// <summary>
-            /// Gets the name of the package.
-            /// </summary>
-            public string PackageId => PackageIdentity.Id;
-
-            public SimplePackageId( string packageId, SVersion v )
-            {
-                PackageIdentity = new PackageIdentity( packageId, NuGetVersion.Parse( v.ToString() ) );
-                Version = v;
-            }
-
-            public override string ToString() => PackageId + '.' + Version.ToNuGetPackageString();
-        }
-
-        static class NuGetHelper
+        public static class NuGetHelper
         {
             static readonly SourceCacheContext _sourceCache;
             static readonly List<Lazy<INuGetResourceProvider>> _providers;
@@ -84,11 +57,11 @@ namespace CodeCake
 
                 public PackageSource FindOrCreateFromUrl( string name, string urlV3 )
                 {
-                    if( String.IsNullOrEmpty( urlV3 ) || !urlV3.EndsWith( "/v3/index.json" ) )
+                    if( string.IsNullOrEmpty( urlV3 ) || !urlV3.EndsWith( "/v3/index.json" ) )
                     {
                         throw new ArgumentException( "Feed requires a /v3/index.json url.", nameof( urlV3 ) );
                     }
-                    if( String.IsNullOrWhiteSpace( name ) )
+                    if( string.IsNullOrWhiteSpace( name ) )
                     {
                         throw new ArgumentNullException( nameof( name ) );
                     }
@@ -101,7 +74,7 @@ namespace CodeCake
 
                 public PackageSource FindOrCreateFromLocalPath( string localPath )
                 {
-                    if( String.IsNullOrWhiteSpace( localPath ) ) throw new ArgumentNullException( nameof( localPath ) );
+                    if( string.IsNullOrWhiteSpace( localPath ) ) throw new ArgumentNullException( nameof( localPath ) );
                     NormalizedPath path = System.IO.Path.GetFullPath( localPath );
                     var exists = _sources.Value.FirstOrDefault( s => s.IsLocal && new NormalizedPath( s.Source ) == path );
                     if( exists != null ) return exists;
@@ -122,14 +95,7 @@ namespace CodeCake
                 /// <returns></returns>
                 public IEnumerable<PackageSource> LoadPackageSources() => _sources.Value;
 
-                bool IPackageSourceProvider.IsPackageSourceEnabled( PackageSource source ) => true;
-
                 bool IPackageSourceProvider.IsPackageSourceEnabled( string name ) => true;
-
-                void IPackageSourceProvider.DisablePackageSource( PackageSource source )
-                {
-                    throw new NotSupportedException( "Should not be called in this scenario." );
-                }
 
                 void IPackageSourceProvider.SaveActivePackageSource( PackageSource source )
                 {
@@ -184,7 +150,7 @@ namespace CodeCake
                 SharedHttpClient = new HttpClient();
             }
 
-            class Logger : NuGet.Common.ILogger
+            class Logger : ILogger
             {
                 readonly ICakeContext _ctx;
                 readonly object _lock;
@@ -203,26 +169,26 @@ namespace CodeCake
                 public void LogError( string data ) { lock( _lock ) _ctx.Error( $"NuGet: {data}" ); }
                 public void LogSummary( string data ) { lock( _lock ) _ctx.Information( $"NuGet: {data}" ); }
                 public void LogInformationSummary( string data ) { lock( _lock ) _ctx.Information( $"NuGet: {data}" ); }
-                public void Log( NuGet.Common.LogLevel level, string data ) { lock( _lock ) _ctx.Information( $"NuGet ({level}): {data}" ); }
-                public Task LogAsync( NuGet.Common.LogLevel level, string data )
+                public void Log( LogLevel level, string data ) { lock( _lock ) _ctx.Information( $"NuGet ({level}): {data}" ); }
+                public Task LogAsync( LogLevel level, string data )
                 {
                     Log( level, data );
                     return System.Threading.Tasks.Task.CompletedTask;
                 }
 
-                public void Log( NuGet.Common.ILogMessage message )
+                public void Log( ILogMessage message )
                 {
                     lock( _lock ) _ctx.Information( $"NuGet ({message.Level}) - Code: {message.Code} - Project: {message.ProjectPath} - {message.Message}" );
                 }
 
-                public Task LogAsync( NuGet.Common.ILogMessage message )
+                public Task LogAsync( ILogMessage message )
                 {
                     Log( message );
                     return System.Threading.Tasks.Task.CompletedTask;
                 }
             }
 
-            static NuGet.Common.ILogger InitializeAndGetLogger( ICakeContext ctx )
+            static ILogger InitializeAndGetLogger( ICakeContext ctx )
             {
                 if( _logger == null )
                 {
@@ -285,23 +251,23 @@ namespace CodeCake
             /// <summary>
             /// Base class for NuGet feeds.
             /// </summary>
-            public abstract class Feed
+            public abstract class NuGetFeed : ArtifactFeed
             {
                 readonly PackageSource _packageSource;
                 readonly SourceRepository _sourceRepository;
                 readonly AsyncLazy<PackageUpdateResource> _updater;
-                List<SimplePackageId> _packagesToPublish;
-
+                
                 /// <summary>
                 /// Initialize a new remote feed.
                 /// Its final <see cref="Name"/> is the one of the existing feed if it appears in the existing
                 /// sources (from NuGet configuration files) or "CCB-<paramref name="name"/>" if this is
                 /// an unexisting source (CCB is for CodeCakeBuilder). 
                 /// </summary>
+                /// <param name="type">The central NuGet handler.</param>
                 /// <param name="name">Name of the feed.</param>
                 /// <param name="urlV3">Must be a v3/index.json url otherwise an argument exception is thrown.</param>
-                protected Feed( string name, string urlV3 )
-                    : this( _sourceProvider.FindOrCreateFromUrl( name, urlV3 ) )
+                protected NuGetFeed( NuGetArtifactType type, string name, string urlV3 )
+                    : this( type, _sourceProvider.FindOrCreateFromUrl( name, urlV3 ) )
                 {
                     if( this is VSTSFeed f ) _vstsFeeds.Add( f );
                 }
@@ -312,13 +278,15 @@ namespace CodeCake
                 /// sources (from NuGet configuration files) or "CCB-GetDirectoryName(localPath)" if this is
                 /// an unexisting source (CCB is for CodeCakeBuilder). 
                 /// </summary>
+                /// <param name="type">The central NuGet handler.</param>
                 /// <param name="localPath">Local path.</param>
-                protected Feed( string localPath )
-                    : this( _sourceProvider.FindOrCreateFromLocalPath( localPath ) )
+                protected NuGetFeed( NuGetArtifactType type, string localPath )
+                    : this( type, _sourceProvider.FindOrCreateFromLocalPath( localPath ) )
                 {
                 }
 
-                Feed( PackageSource s )
+                NuGetFeed( NuGetArtifactType type, PackageSource s )
+                    : base( type )
                 {
                     _packageSource = s;
                     _sourceRepository = new SourceRepository( _packageSource, _providers );
@@ -352,76 +320,78 @@ namespace CodeCake
                 /// If the source appears in NuGet configuration files, it is the configured name of the source, otherwise
                 /// it is prefixed with "CCB-" (CCB is for CodeCakeBuilder). 
                 /// </summary>
-                public string Name => _packageSource.Name;
+                public override string Name => _packageSource.Name;
 
                 /// <summary>
-                /// Gets the list of packages that must be published (ie. they don't already exist in the feed).
+                /// Creates a list of push entries from a set of local artifacts into this feed.
                 /// </summary>
-                public IReadOnlyList<SimplePackageId> PackagesToPublish => _packagesToPublish;
+                /// <param name="artifacts">Local artifacts.</param>
+                /// <returns>The set of push into this feed.</returns>
+                public override async Task<IEnumerable<ArtifactPush>> CreatePushListAsync( IEnumerable<ILocalArtifact> artifacts )
+                {
+                    var result = new List<ArtifactPush>();
+                    var logger = InitializeAndGetLogger( Cake );
+                    MetadataResource meta = await _sourceRepository.GetResourceAsync<MetadataResource>();
+                    foreach( var p in artifacts )
+                    {
+                        var pId = new PackageIdentity( p.ArtifactInstance.Artifact.Name, new NuGetVersion( p.ArtifactInstance.Version.ToNuGetPackageString() ) );
+                        if( await meta.Exists( pId, _sourceCache, logger, CancellationToken.None ) )
+                        {
+                            Cake.Debug( $" ==> Feed '{Name}' already contains {p.ArtifactInstance}." );
+                        }
+                        else
+                        {
+                            Cake.Debug( $"Package {p.ArtifactInstance} must be published to remote feed '{Name}'." );
+                            result.Add( new ArtifactPush( p, this ) );
+                        }
+                    }
+                    return result;
+                }
 
                 /// <summary>
-                /// Pushes a set of packages (this is typically <see cref="PackagesToPublish"/>) from .nupkg files
-                /// that must exist in <paramref name="path"/>.
+                /// Pushes a set of packages from .nupkg files that must exist in <see cref="CheckRepositoryInfo.ReleasesFolder"/>.
                 /// </summary>
-                /// <param name="ctx">The Cake context.</param>
-                /// <param name="path">The path where the .nupkg mus be found.</param>
-                /// <param name="packages">The set of packages to push.</param>
-                /// <param name="timeoutSeconds">Timeout in seconds.</param>
+                /// <param name="pushes">The instances to push (that necessary target this feed).</param>
                 /// <returns>The awaitable.</returns>
-                public async Task PushPackagesAsync( ICakeContext ctx, string path, IEnumerable<SimplePackageId> packages, int timeoutSeconds = 20 )
+                public override async Task PushAsync( IEnumerable<ArtifactPush> pushes )
                 {
                     string apiKey = null;
                     if( !_packageSource.IsLocal )
                     {
-                        apiKey = ResolveAPIKey( ctx );
+                        apiKey = ResolveAPIKey();
                         if( string.IsNullOrEmpty( apiKey ) )
                         {
-                            ctx.Information( $"Could not resolve API key. Push to '{Name}' => '{Url}' is skipped." );
+                            Cake.Information( $"Could not resolve API key. Push to '{Name}' => '{Url}' is skipped." );
                             return;
                         }
                     }
-                    ctx.Information( $"Pushing packages to '{Name}' => '{Url}'." );
-                    var logger = InitializeAndGetLogger( ctx );
+                    Cake.Information( $"Pushing packages to '{Name}' => '{Url}'." );
+                    var logger = InitializeAndGetLogger( Cake );
                     var updater = await _updater;
-                    foreach( var package in packages )
+                    foreach( var p in pushes )
                     {
-                        var fullPath = System.IO.Path.Combine( path, package.ToString() + ".nupkg" );
+                        string packageString = p.Name + "." + p.Version.ToNuGetPackageString();
+                        var fullPath = ArtifactType.GlobalInfo.ReleasesFolder.AppendPart( packageString + ".nupkg" );
                         await updater.Push(
                             fullPath,
-                            String.Empty, // no Symbol source.
-                            timeoutSeconds,
+                            string.Empty, // no Symbol source.
+                            20, //20 seconds timeout
                             disableBuffering: false,
                             getApiKey: endpoint => apiKey,
                             getSymbolApiKey: symbolsEndpoint => null,
                             noServiceEndpoint: false,
                             log: logger );
-                        await OnPackagePushed( ctx, path, package );
                     }
-                    await OnAllPackagesPushed( ctx, path, packages );
-                }
-
-                /// <summary>
-                /// Called for each package pushed.
-                /// Does nothing at this level.
-                /// </summary>
-                /// <param name="ctx">The Cake context.</param>
-                /// <param name="path">The path where the .nupkg mus be found.</param>
-                /// <param name="packages">The set of packages to push.</param>
-                /// <returns>The awaitable.</returns>
-                protected virtual Task OnPackagePushed( ICakeContext ctx, string path, SimplePackageId package )
-                {
-                    return System.Threading.Tasks.Task.CompletedTask;
+                    await OnAllArtifactsPushed( pushes );
                 }
 
                 /// <summary>
                 /// Called once all the packages are pushed.
                 /// Does nothing at this level.
                 /// </summary>
-                /// <param name="ctx">The Cake context.</param>
-                /// <param name="path">The path where the .nupkg mus be found.</param>
-                /// <param name="packages">The set of packages to push.</param>
+                /// <param name="pushes">The instances to push (that necessary target this feed).</param>
                 /// <returns>The awaitable.</returns>
-                protected virtual Task OnAllPackagesPushed( ICakeContext ctx, string path, IEnumerable<SimplePackageId> packages )
+                protected virtual Task OnAllArtifactsPushed( IEnumerable<ArtifactPush> pushes )
                 {
                     return System.Threading.Tasks.Task.CompletedTask;
                 }
@@ -429,69 +399,8 @@ namespace CodeCake
                 /// <summary>
                 /// Must resolve the API key required to push the package.
                 /// </summary>
-                /// <param name="ctx"></param>
-                /// <returns></returns>
-                protected abstract string ResolveAPIKey( ICakeContext ctx );
-
-                /// <summary>
-                /// Gets the number of packages that exist in the feed.
-                /// This is computed by <see cref="InitializePackagesToPublishAsync"/>.
-                /// </summary>
-                public int PackagesAlreadyPublishedCount { get; private set; }
-
-                /// <summary>
-                /// Initializes the <see cref="PackagesToPublish"/> and <see cref="PackagesAlreadyPublishedCount"/>.
-                /// This can be called multiple times.
-                /// </summary>
-                /// <param name="ctx">The Cake context.</param>
-                /// <param name="allPackagesToPublish">The set of packages </param>
-                /// <returns>The awaitable.</returns>
-                public async Task InitializePackagesToPublishAsync( ICakeContext ctx, IEnumerable<SimplePackageId> allPackagesToPublish )
-                {
-                    if( _packagesToPublish != null )
-                    {
-                        _packagesToPublish.Clear();
-                        PackagesAlreadyPublishedCount = 0;
-                    }
-                    else _packagesToPublish = new List<SimplePackageId>();
-                    var logger = InitializeAndGetLogger( ctx );
-                    MetadataResource meta = await _sourceRepository.GetResourceAsync<MetadataResource>();
-                    foreach( var p in allPackagesToPublish )
-                    {
-                        if( await meta.Exists( p.PackageIdentity, _sourceCache, logger, CancellationToken.None ) )
-                        {
-                            ++PackagesAlreadyPublishedCount;
-                        }
-                        else
-                        {
-                            ctx.Debug( $"Package {p.PackageId} must be published to remote feed '{Name}'." );
-                            _packagesToPublish.Add( p );
-                        }
-                    }
-                    ctx.Debug( $" ==> {_packagesToPublish.Count} package(s) must be published to remote feed '{Name}'." );
-                }
-
-                /// <summary>
-                /// Dumps information about <see cref="PackagesToPublish"/>.
-                /// </summary>
-                /// <param name="ctx">The Cake context.</param>
-                /// <param name="allPackagesToPublish">The set of all packages to publish.</param>
-                public void Information( ICakeContext ctx, IEnumerable<SimplePackageId> allPackagesToPublish )
-                {
-                    if( PackagesToPublish.Count == 0 )
-                    {
-                        ctx.Information( $"Feed '{Name}': No packages must be pushed ({PackagesAlreadyPublishedCount} packages already available)." );
-                    }
-                    else if( PackagesAlreadyPublishedCount == 0 )
-                    {
-                        ctx.Information( $"Feed '{Name}': All {PackagesToPublish.Count} packages must be pushed." );
-                    }
-                    else
-                    {
-                        ctx.Information( $"Feed '{Name}': {PackagesToPublish.Count} packages must be pushed: {PackagesToPublish.Select( p => p.PackageId ).Concatenate()}." );
-                        ctx.Information( $"               => {PackagesAlreadyPublishedCount} packages already pushed: {allPackagesToPublish.Except( PackagesToPublish ).Select( p => p.PackageId ).Concatenate()}." );
-                    }
-                }
+                /// <returns>The secret (that can be null or empty).</returns>
+                protected abstract string ResolveAPIKey();
             }
         }
 
@@ -502,7 +411,7 @@ namespace CodeCake
         /// must be defined and contains the token.
         /// If this SecretKeyName is not defined or empty, push is skipped.
         /// </summary>
-        class VSTSFeed : NuGetHelper.Feed
+        class VSTSFeed : NuGetHelper.NuGetFeed
         {
             string _azureFeedPAT;
 
@@ -512,8 +421,8 @@ namespace CodeCake
             /// <param name="name">Name of the feed.</param>
             /// <param name="urlV3">Must be a v3/index.json url otherwise an argument exception is thrown.</param>
             /// <param name="secretKeyName">The secret key name. When null or empty, push is skipped.</param>
-            public VSTSFeed( string name, string urlV3, string secretKeyName )
-                : base( name, urlV3 )
+            public VSTSFeed( NuGetArtifactType t, string name, string urlV3, string secretKeyName )
+                : base( t, name, urlV3 )
             {
                 SecretKeyName = secretKeyName;
             }
@@ -532,12 +441,12 @@ namespace CodeCake
             /// </summary>
             /// <param name="ctx">The Cake context.</param>
             /// <returns>The "VSTS" API key or null to skip the push.</returns>
-            protected override string ResolveAPIKey( ICakeContext ctx )
+            protected override string ResolveAPIKey()
             {
-                _azureFeedPAT = ctx.InteractiveEnvironmentVariable( SecretKeyName );
-                if( String.IsNullOrWhiteSpace( _azureFeedPAT ) )
+                _azureFeedPAT = Cake.InteractiveEnvironmentVariable( SecretKeyName );
+                if( string.IsNullOrWhiteSpace( _azureFeedPAT ) )
                 {
-                    ctx.Warning( $"No {SecretKeyName} environment variable found." );
+                    Cake.Warning( $"No {SecretKeyName} environment variable found." );
                     _azureFeedPAT = null;
                 }
                 // The API key for the Credential Provider must be "VSTS".
@@ -549,11 +458,23 @@ namespace CodeCake
         /// <summary>
         /// A SignatureVSTSFeed handles Stable, Latest, Preview and CI Azure feed views with
         /// package promotion based on the published version.
-        /// The secret key name is:
+        /// The secret key name is built by <see cref="GetSecretKeyName"/>:
         /// "AZURE_FEED_" + Organization.ToUpperInvariant().Replace( '-', '_' ).Replace( ' ', '_' ) + "_PAT".
         /// </summary>
         class SignatureVSTSFeed : VSTSFeed
         {
+            /// <summary>
+            /// Builds the standardized secret key name from the organization name: this is
+            /// the Personal Access Token that allows push packages.
+            /// </summary>
+            /// <param name="organization">Organization name.</param>
+            /// <returns>The secret key name to use.</returns>
+            public static string GetSecretKeyName( string organization )
+                                    => "AZURE_FEED_" + organization.ToUpperInvariant()
+                                                                   .Replace( '-', '_' )
+                                                                   .Replace( ' ', '_' )
+                                                     + "_PAT";
+
             /// <summary>
             /// Initialize a new SignatureVSTSFeed.
             /// Its <see cref="NuGetHelper.Feed.Name"/> is set to "<paramref name="organization"/>-<paramref name="feedName"/>"
@@ -561,14 +482,10 @@ namespace CodeCake
             /// </summary>
             /// <param name="organization">Name of the organization.</param>
             /// <param name="feedName">Identifier of the feed in Azure, inside the organization.</param>
-            public SignatureVSTSFeed( string organization, string feedName )
-                : base( organization + "-" + feedName,
+            public SignatureVSTSFeed( NuGetArtifactType t, string organization, string feedName )
+                : base( t, organization + "-" + feedName,
                         $"https://pkgs.dev.azure.com/{organization}/_packaging/{feedName}/nuget/v3/index.json",
-                        "AZURE_FEED_" + organization
-                                        .ToUpperInvariant()
-                                        .Replace( '-', '_' )
-                                        .Replace( ' ', '_' )
-                                        + "_PAT" )
+                        GetSecretKeyName( organization ) )
             {
                 Organization = organization;
                 FeedName = feedName;
@@ -584,35 +501,34 @@ namespace CodeCake
             /// </summary>
             public string FeedName { get; }
 
-
             /// <summary>
             /// Implements Package promotion in @CI, @Preview, @Latest and @Stable views.
             /// </summary>
             /// <param name="ctx">The Cake context.</param>
             /// <param name="path">The path where the .nupkg mus be found.</param>
-            /// <param name="packages">The set of packages to push.</param>
             /// <returns>The awaitable.</returns>
-            protected override async Task OnAllPackagesPushed( ICakeContext ctx, string path, IEnumerable<SimplePackageId> packages )
+            protected override async Task OnAllArtifactsPushed( IEnumerable<ArtifactPush> pushes )
             {
-                var basicAuth = Convert.ToBase64String( ASCIIEncoding.ASCII.GetBytes( ":" + ctx.InteractiveEnvironmentVariable( SecretKeyName ) ) );
-                foreach( var p in packages )
+                var basicAuth = Convert.ToBase64String( Encoding.ASCII.GetBytes( ":" + Cake.InteractiveEnvironmentVariable( SecretKeyName ) ) );
+                foreach( var p in pushes )
                 {
                     foreach( var view in p.Version.PackageQuality.GetLabels() )
                     {
                         using( HttpRequestMessage req = new HttpRequestMessage( HttpMethod.Post, $"https://pkgs.dev.azure.com/{Organization}/_apis/packaging/feeds/{FeedName}/nuget/packagesBatch?api-version=5.0-preview.1" ) )
                         {
                             req.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue( "Basic", basicAuth );
-                            var body = GetPromotionJSONBody( p.PackageId, p.PackageIdentity.Version.ToString(), view.ToString() );
+                            var body = GetPromotionJSONBody( p.Name, p.Version.ToNuGetPackageString(), view.ToString() );
                             req.Content = new StringContent( body, Encoding.UTF8, "application/json" );
                             using( var m = await NuGetHelper.SharedHttpClient.SendAsync( req ) )
                             {
                                 if( m.IsSuccessStatusCode )
                                 {
-                                    ctx.Information( $"Package '{p}' promoted to view '@{view}'." );
+                                    Cake.Information( $"Package '{p.Name}' promoted to view '@{view}'." );
                                 }
                                 else
                                 {
-                                    ctx.Error( $"Package '{p}' promotion to view '@{view}' failed." );
+                                    Cake.Error( $"Package '{p.Name}' promotion to view '@{view}' failed." );
+                                    // Throws!
                                     m.EnsureSuccessStatusCode();
                                 }
                             }
@@ -645,7 +561,7 @@ namespace CodeCake
         /// <summary>
         /// A remote feed where push is controlled by its <see cref="SecretKeyName"/>.
         /// </summary>
-        class RemoteFeed : NuGetHelper.Feed
+        class RemoteFeed : NuGetHelper.NuGetFeed
         {
             /// <summary>
             /// Initialize a new remote feed.
@@ -655,8 +571,8 @@ namespace CodeCake
             /// <param name="name">Name of the feed.</param>
             /// <param name="urlV3">Must be a v3/index.json url otherwise an argument exception is thrown.</param>
             /// <param name="secretKeyName">The secret key name.</param>
-            public RemoteFeed( string name, string urlV3, string secretKeyName )
-                : base( name, urlV3 )
+            public RemoteFeed( NuGetArtifactType t, string name, string urlV3, string secretKeyName )
+                : base( t, name, urlV3 )
             {
                 SecretKeyName = secretKeyName;
             }
@@ -672,31 +588,30 @@ namespace CodeCake
             /// </summary>
             /// <param name="ctx">The Cake context.</param>
             /// <returns>The API key or null.</returns>
-            protected override string ResolveAPIKey( ICakeContext ctx )
+            protected override string ResolveAPIKey()
             {
                 if( String.IsNullOrEmpty( SecretKeyName ) )
                 {
-                    ctx.Information( $"Remote feed '{Name}' APIKeyName is null or empty." );
+                    Cake.Information( $"Remote feed '{Name}' APIKeyName is null or empty." );
                     return null;
                 }
-                return ctx.InteractiveEnvironmentVariable( SecretKeyName );
+                return Cake.InteractiveEnvironmentVariable( SecretKeyName );
             }
-
         }
 
         /// <summary>
         /// Local feed. Pushes are always possible.
         /// </summary>
-        class LocalFeed : NuGetHelper.Feed
+        class NugetLocalFeed : NuGetHelper.NuGetFeed
         {
-            public LocalFeed( string path )
-                : base( path )
+            public NugetLocalFeed( NuGetArtifactType t, string path )
+                : base( t, path )
             {
             }
 
             public override string SecretKeyName => null;
 
-            protected override string ResolveAPIKey( ICakeContext ctx ) => null;
+            protected override string ResolveAPIKey() => null;
         }
 
     }
