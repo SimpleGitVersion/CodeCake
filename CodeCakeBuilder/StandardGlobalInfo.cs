@@ -12,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace CodeCake
@@ -23,10 +24,14 @@ namespace CodeCake
     {
         readonly ICakeContext _ctx;
         readonly SimpleRepositoryInfo _gitInfo;
-        readonly HashSet<ArtifactType> _artifactTypes = new HashSet<ArtifactType>();
+        readonly HashSet<ISolution> _solutions = new HashSet<ISolution>();
         List<ArtifactPush> _artifactPushes;
         bool _ignoreNoArtifactsToProduce;
 
+        static StandardGlobalInfo()
+        {
+            SharedHttpClient = new HttpClient();
+        }
         public StandardGlobalInfo( ICakeContext ctx, SimpleRepositoryInfo gitInfo )
         {
             _ctx = ctx;
@@ -36,6 +41,11 @@ namespace CodeCake
                            && (gitInfo.PreReleaseName.Length == 0 || gitInfo.PreReleaseName == "rc");
             ReleasesFolder = "CodeCakeBuilder/Releases";
             Directory.CreateDirectory( ReleasesFolder );
+        }
+
+        public void RegisterSolution(ISolution solution)
+        {
+            _solutions.Add( solution );
         }
 
         /// <summary>
@@ -48,10 +58,12 @@ namespace CodeCake
         /// </summary>
         public SimpleRepositoryInfo GitInfo => _gitInfo;
 
+        IEnumerable<ISolutionProducingArtifact> SolutionProducingArtifacts => Solutions.OfType<ISolutionProducingArtifact>();
+
         /// <summary>
-        /// Gets the set of <see cref="ArtifactType"/> that have been registered.
+        /// Gets the set of <see cref="ArtifactType"/> of the <see cref="ISolutionProducingArtifact"/> that have been registered.
         /// </summary>
-        public ISet<ArtifactType> ArtifactTypes => _artifactTypes;
+        public IEnumerable<ArtifactType> ArtifactTypes => SolutionProducingArtifacts.Select(p=>p.ArtifactType);
 
         /// <summary>
         /// Gets the release folder: "CodeCakeBuilder/Releases".
@@ -79,6 +91,13 @@ namespace CodeCake
         /// Gets whether this is a purely local build.
         /// </summary>
         public bool IsLocalCIRelease { get; set; }
+
+        /// <summary>
+        /// Shared http client.
+        /// See: https://aspnetmonsters.com/2016/08/2016-08-27-httpclientwrong/
+        /// Do not add any default on it.
+        /// </summary>
+        public static readonly HttpClient SharedHttpClient;
 
         /// <summary>
         /// Gets whether artifacts should be pushed to remote feeds.
@@ -114,6 +133,7 @@ namespace CodeCake
         /// </summary>
         public bool NoArtifactsToProduce => !GetArtifactPushList().Any();
 
+
         /// <summary>
         /// Gets a read only list of all the pushes of artifacts for all <see cref="ArtifactType"/>.
         /// </summary>
@@ -127,7 +147,7 @@ namespace CodeCake
             if( _artifactPushes == null || reset )
             {
                 _artifactPushes = new List<ArtifactPush>();
-                var tasks = _artifactTypes.Select( f => f.GetPushListAsync() ).ToArray();
+                var tasks = ArtifactTypes.Select( f => f.GetPushListAsync() ).ToArray();
                 Task.WaitAll( tasks );
                 foreach( var p in tasks.Select( t => t.Result ) )
                 {
@@ -142,6 +162,8 @@ namespace CodeCake
         /// </summary>
         public bool ShouldStop => NoArtifactsToProduce && !IgnoreNoArtifactsToProduce;
 
+        public IReadOnlyCollection<ISolution> Solutions => _solutions;
+
         /// <summary>
         /// Simply calls <see cref="ArtifactType.PushAsync(IEnumerable{ArtifactPush})"/> on each <see cref="ArtifactTypes"/>
         /// with their correct typed artifacts.
@@ -149,7 +171,7 @@ namespace CodeCake
         public void PushArtifacts( IEnumerable<ArtifactPush> pushes = null )
         {
             if( pushes == null ) pushes = GetArtifactPushList();
-            var tasks = _artifactTypes.Select( t => t.PushAsync( pushes.Where( a => a.Feed.ArtifactType == t ) ) ).ToArray();
+            var tasks = ArtifactTypes.Select( t => t.PushAsync( pushes.Where( a => a.Feed.ArtifactType == t ) ) ).ToArray();
             Task.WaitAll( tasks );
         }
 

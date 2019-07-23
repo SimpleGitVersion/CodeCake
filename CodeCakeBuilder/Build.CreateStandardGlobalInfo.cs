@@ -1,15 +1,6 @@
-using Cake.Common;
 using Cake.Common.Build;
 using Cake.Common.Diagnostics;
-using Cake.Common.Solution;
-using Cake.Core;
-using CK.Text;
-using CodeCake.Abstractions;
-using CSemVer;
 using SimpleGitVersion;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace CodeCake
 {
@@ -54,7 +45,7 @@ namespace CodeCake
                 // gitInfo is valid: it is either ci or a release build. 
                 var v = gitInfo.Info.FinalSemVersion;
                 // If a /LocalFeed/ directory exists above, we publish the packages in it.
-                var localFeedRoot = Cake.FindDirectoryAbove( "LocalFeed" );
+                var localFeedRoot = Cake.FindSiblingDirectoryAbove( Cake.Environment.WorkingDirectory.FullPath, "LocalFeed" );
                 if( localFeedRoot != null )
                 {
                     if( v.AsCSVersion == null )

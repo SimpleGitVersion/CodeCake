@@ -1,20 +1,51 @@
+using Cake.Common.Diagnostics;
 using Cake.Common.Solution;
-using Cake.Core;
+using Cake.Common.Tools.DotNetCore;
+using Cake.Common.Tools.DotNetCore.Pack;
 using CodeCake.Abstractions;
 using CSemVer;
+using SimpleGitVersion;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using static CodeCake.Build;
 
 namespace CodeCake
 {
-    public static class StandardGlobalInfoNuGetExtension
+
+    public partial class DotnetSolution : ISolutionProducingArtifact
     {
-        public static StandardGlobalInfo AddNuGet( this StandardGlobalInfo globalInfo, IEnumerable<SolutionProject> projectsToPublish )
+        private ArtifactType _artifactType;
+
+        public ArtifactType ArtifactType
         {
-            new Build.NuGetArtifactType( globalInfo, projectsToPublish );
-            return globalInfo;
+            get
+            {
+                if( _artifactType == null ) _artifactType = new NuGetArtifactType( _globalInfo, this );
+                return _artifactType;
+            }
+        }
+
+        public void Pack()
+        {
+            var nugetInfo = _globalInfo.ArtifactTypes.OfType<NuGetArtifactType>().Single();
+            var settings = new DotNetCorePackSettings().AddVersionArguments( _globalInfo.GitInfo, c =>
+            {
+                c.NoBuild = true;
+                c.IncludeSymbols = true;
+                c.Configuration = _globalInfo.BuildConfiguration;
+                c.OutputDirectory = _globalInfo.ReleasesFolder.Path;
+            } );
+            foreach( var p in nugetInfo.GetNuGetArtifacts() )
+            {
+                _globalInfo.Cake.Information( p.ArtifactInstance );
+                _globalInfo.Cake.DotNetCorePack( p.Project.Path.FullPath, settings );
+            }
         }
     }
+
+
+
 
     public partial class Build
     {
@@ -23,7 +54,7 @@ namespace CodeCake
         /// </summary>
         public class NuGetArtifactType : ArtifactType
         {
-            readonly IList<SolutionProject> _projectsToPublish;
+            readonly DotnetSolution _solution;
 
             public class NuGetArtifact : ILocalArtifact
             {
@@ -38,10 +69,11 @@ namespace CodeCake
                 public SolutionProject Project { get; }
             }
 
-            public NuGetArtifactType( StandardGlobalInfo globalInfo, IEnumerable<SolutionProject> projectsToPublish )
+
+            public NuGetArtifactType( StandardGlobalInfo globalInfo, DotnetSolution solution )
                 : base( globalInfo, "NuGet" )
             {
-                _projectsToPublish = projectsToPublish.ToList();
+                _solution = solution;
             }
 
             /// <summary>
@@ -56,7 +88,7 @@ namespace CodeCake
             /// <returns>The set of remote NuGet feeds (in practice at most one).</returns>
             protected override IEnumerable<ArtifactFeed> GetRemoteFeeds()
             {
-                if( GlobalInfo.Version.PackageQuality >= PackageQuality.ReleaseCandidate ) yield return new RemoteFeed( this, "nuget.org", "https://api.nuget.org/v3/index.json", "NUGET_ORG_PUSH_API_KEY" );
+                if( GlobalInfo.Version.PackageQuality >= CSemVer.PackageQuality.ReleaseCandidate ) yield return new RemoteFeed( this, "nuget.org", "https://api.nuget.org/v3/index.json", "NUGET_ORG_PUSH_API_KEY" );
 yield return new SignatureVSTSFeed( this, "Signature-OpenSource", "Default" );
 
             }
@@ -74,9 +106,8 @@ yield return new SignatureVSTSFeed( this, "Signature-OpenSource", "Default" );
 
             protected override IEnumerable<ILocalArtifact> GetLocalArtifacts()
             {
-                return _projectsToPublish.Select( p => new NuGetArtifact( p, GlobalInfo.Version ) );
+                return _solution.ProjectsToPublish.Select( p => new NuGetArtifact( p, GlobalInfo.Version ) );
             }
-
         }
     }
 }

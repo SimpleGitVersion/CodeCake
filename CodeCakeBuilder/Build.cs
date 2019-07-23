@@ -38,19 +38,9 @@ namespace CodeCake
         {
             Cake.Log.Verbosity = Verbosity.Diagnostic;
 
-            var solutionFileName = Cake.Environment.WorkingDirectory.GetDirectoryName() + ".sln";
-
-            var projects = Cake.ParseSolution( solutionFileName )
-                                       .Projects
-                                       .Where( p => !(p is SolutionFolder) && p.Name != "CodeCakeBuilder" );
-
-            // We do not generate NuGet packages for /Tests projects for this solution.
-            var projectsToPublish = projects
-                                        .Where( p => !p.Path.Segments.Contains( "Tests" ) );
-
             SimpleRepositoryInfo gitInfo = Cake.GetSimpleRepositoryInfo();
             StandardGlobalInfo globalInfo = CreateStandardGlobalInfo( gitInfo )
-                                                .AddNuGet( projectsToPublish )
+                                                .AddDotnet()
                                                 .SetCIBuildTag();
 
             Setup( context =>
@@ -83,8 +73,7 @@ namespace CodeCake
                 .IsDependentOn( "Check-Repository" )
                 .Does( () =>
                 {
-                    Cake.CleanDirectories( projects.Select( p => p.Path.GetDirectory().Combine( "bin" ) ) );
-                    Cake.CleanDirectories( projects.Select( p => p.Path.GetDirectory().Combine( "obj" ) ) );
+                    globalInfo.GetDotnetSolution().Clean();
                     Cake.CleanDirectories( globalInfo.ReleasesFolder );
                     Cake.DeleteFiles( "Tests/**/TestResult*.xml" );
                 } );
@@ -141,7 +130,7 @@ namespace CodeCake
                 .IsDependentOn( "AutoTests" )
                 .Does( () =>
                 {
-                    StandardSolutionBuild( globalInfo, solutionFileName );
+                    globalInfo.GetDotnetSolution().Build();
                 } );
 
             Task( "Create-NuGet-Packages" )
@@ -149,7 +138,7 @@ namespace CodeCake
                 .IsDependentOn( "Build" )
                 .Does( () =>
                 {
-                    StandardCreateNuGetPackages( globalInfo );
+                    globalInfo.GetDotnetSolution().Pack();
                 } );
 
             Task( "Push-NuGet-Packages" )
