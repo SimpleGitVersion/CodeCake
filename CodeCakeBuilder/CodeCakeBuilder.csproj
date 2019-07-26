@@ -3,14 +3,15 @@
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <OutputType>Exe</OutputType>
     <LangVersion>7.2</LangVersion>
+    <IsPackable>False</IsPackable>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="NuGet.Protocol" Version="4.9.2" />
-    <PackageReference Include="NuGet.Credentials" Version="4.9.2" />
+    <PackageReference Include="NuGet.Protocol" Version="5.1.0" />
+    <PackageReference Include="NuGet.Credentials" Version="5.1.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Code.Cake\Code.Cake.csproj" />
-    <PackageReference Include="CK.Text" Version="8.0.2" />
-    <PackageReference Include="SimpleGitVersion.Cake" Version="0.37.3" />
+    <PackageReference Include="CK.Text" Version="8.0.3--0027-develop" />
+    <PackageReference Include="SimpleGitVersion.Cake" Version="0.38.0" />
   </ItemGroup>
 </Project>
