@@ -1,4 +1,4 @@
-⚠️This repository has moved to https://github.com/SimpleGitVersion/CodeCake
+⚠️This repository has moved to https://github.com/CK-Build/CodeCake
 
 
 Code.Cake
